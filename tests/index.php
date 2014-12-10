@@ -1,16 +1,6 @@
 <?php
 
-error_reporting(-1);
-ini_set('display_errors', 1);
-
-// Autoload
-spl_autoload_register(function($class){
-    $file = dirname(__DIR__).'/src/'.str_replace('\\', '/', $class.'.php');
-
-    if(is_readable($file)){
-        require_once($file);
-    }
-});
+require_once('inc/autoload.php');
 
 // Load an array of connection info from config.php
 // This allows for easy testing as .gitnore will not upload individual configs
@@ -61,7 +51,8 @@ try {
 
     // The Kitchen Sink
     // Return data as object
-    // SELECT `id`, `title` FROM posts WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC  LIMIT ?, ?
+    // SELECT `id`, `title` FROM posts WHERE `date` > ? AND
+    // `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC  LIMIT ?, ?
     $users = $db->get('posts', ['id', 'title'])
             ->where('date', '>', '2014-11-20')
             ->andWhere('id', 'BETWEEN', [1, 9])
@@ -94,7 +85,8 @@ try {
 
     // Create a record
     // Return true/false of create
-    // INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?);
+    // INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`)
+    // VALUES (?, ?, ?, ?, ?, ?);
     // $register = $db->create('users', [
         // 'id'        => 3,
         // 'username' => 'foobar',
