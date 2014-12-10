@@ -1,0 +1,115 @@
+// Select rows
+$this->_db
+	->get(
+		'posts', // Defaults to "*" (all)
+	)
+	->where([
+		['category', '=', 'news'], //default to AND
+		['date' '=', 'some date'],
+	])
+	->limit(5)
+	->offset(15)
+	->order('id', 'ASC');
+	
+$this->_db
+	->get(
+		'posts',
+		['id', 'name', 'date'] // Second parameter if you want to select specific
+	)
+	->where([
+		['category', '=', 'news'],
+		['date' '=', 'some date'],
+	])
+	->limit(5)
+	->offset(15)
+	->order(['id', 'date'], 'ASC'); // Multi sort
+
+// Update row
+$this->_db
+	->update('users', [
+		'username' => 'x',
+		'email' => 'y',
+		'name' => 'z'
+	])
+	->where(
+		['id', '=', 17]
+	);
+
+	
+// Create row
+$this->_db
+	->from('users')
+	->make('row', [
+		'username' => 'x',
+		'email' => 'y',
+		'name' => 'z'
+	]);
+
+
+// Delete
+$this->_db
+	->delete('posts')
+	->where([
+		['id', '=', 17]
+	]);
+	
+	
+	
+	
+	
+// JOINS
+// 
+// WHAT IS THIS EVEN, BBY PLZ HLP
+// IMA CRY
+// 
+$this->_db
+	->get(
+		['table1', 'table2'], // If multi param for table assume JOINS
+		['users.id', 'users.username', 'jobs.job']
+	)
+	->where([
+		['table1.username', '=', 'bob'],
+		['table2.job' '=', 'coder'],
+	]);
+	
+	
+$this->_db
+	->get(
+		// same as SELECT `table1` as `users`
+		['table1' => 'users', 'table2' => 'jobs'], // If multi param for table assume JOINS
+		['users.id', 'users.username', 'jobs.job']
+	)
+	->where([
+		['table1.username', '=', 'bob'],
+		['table2.job' '=', 'coder'],
+	]);
+		
+
+$this->_db
+	->get(
+		['table1', 'table2'],
+		['users.id', 'users.username', 'jobs.job']
+	)
+	->join([
+		['table1', 'inner', 'users']
+		['table2', 'outer', 'jobs']
+	])
+	->where([
+		['table1.username', '=', 'bob'],
+		['table2.job' '=', 'coder'],
+	])
+	
+	
+	
+	
+// 
+// create & drop tables
+// 
+	
+	
+// Create table
+$this->_db->table('posts')->create(['username', 'email', 'name']);
+	
+	
+// Drop
+$this->_db->table('posts')->drop();
