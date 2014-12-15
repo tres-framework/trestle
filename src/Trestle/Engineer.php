@@ -95,7 +95,7 @@ namespace Trestle {
                 $query = $this->_buildQuery();
 
                 $debug = debug_backtrace();
-
+                
                 return $this->_db->query($query, $this->_bindings, [
                     'called'    => [
                         'file' => $debug[0]['file'],
@@ -105,7 +105,7 @@ namespace Trestle {
                     'backtrace' => $this->_backtrace,
                     'pattern'   => $this->pattern,
                     'error'     => null,
-                    'query'     => $query,
+                    'query'     => (empty(trim($query)) ? 'No query' : $query),
                     'binds'     => $this->_bindings,
                     'execution' => [],
                 ], $this->_log);

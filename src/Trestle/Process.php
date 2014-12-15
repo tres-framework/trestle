@@ -50,21 +50,21 @@ namespace Trestle {
             try {
                 $this->_connection = new PDO(
                     $driver.':'.
-                        'host='.$config['host'].';'.
-                        'dbname='.$config['database'].';'.
-                        (isset($config['port']) ? $config['port'].';' : '').
-                        (isset($config['charset']) ? $config['charset'].';' : ''),
+                    'host='.$config['host'].';'.
+                    'dbname='.$config['database'].';'.
+                    (isset($config['port']) ? $config['port'].';' : '').
+                    (isset($config['charset']) ? $config['charset'].';' : ''),
                     $config['username'],
                     $config['password']
                 );
                 
-                if(Config::get('display_errors')){
+                if(Config::get('display_errors')) {
                     $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 }
                 
                 return $this->_connection;
-            } catch(PDOException $e){
-                throw new DatabaseException($e);
+            } catch(PDOException $e) {
+                throw new DatabaseException('Trestle could not connect to the database, please check your database configuration.');
             }
         }
         
@@ -113,7 +113,7 @@ namespace Trestle {
                     if(isset($log) && $log instanceof Log) {
                         $log->log("Query failed!\r\n|-> {$this->_debug['query']}");
                     }
-                    throw new QueryException('Query failed?!?');
+                    throw new QueryException('Query failed, check Trestle logs.');
                 }
                 
                 // Logs

@@ -66,7 +66,7 @@ namespace Trestle {
                 $this->_process = new Process();
                 $this->_process->connection($this->_config);
             } catch(Exception $e) {
-                throw new TrestleException($e);
+                throw new TrestleException($e->getMessage());
             }
         }
 
