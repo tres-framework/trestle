@@ -1,0 +1,30 @@
+{
+    "name": "Trestle",
+    "version": "0.1",
+    "website": "http://tresframework.com",
+    "documentation": "https://github.com/tres-framework/docs/blob/master/trestle.md",
+    "description_short": "A database wrapper using fluent interface (stand-alone package).",
+    
+    "description_long": 
+        "Trestle is an objected oriented PHP 5.4+ PDO database wrapper that is ",
+        "designed to handle multiple database connections with different ",
+        "database types.",
+    
+    "dependencies": {
+        "php": ">= 5.4",
+        "pdo"
+    },
+    
+    "contributors": [{
+        "name": "Julian Richen",
+        "nickname": "FireDart",
+        "role": "creator, maintainer",
+        "email": "julian@tresframework.com",
+        "github": "https://github.com/firedart/"
+    },{
+        "name": "Ped Zed",
+        "nickname": "pedzed",
+        "email": "ped@tresframework.com",
+        "github": "https://github.com/pedzed/"
+    }]
+}
