@@ -198,7 +198,7 @@ namespace Trestle {
             if(is_writable($this->_directory)) {
                 if(!file_exists($file) && $fileHandle = fopen($file, 'w')){
                     chmod($file, $this->_filePermissions);
-                    fwrite($fileHandle, 'Options -Indexes');
+                    fwrite($fileHandle, 'Options -Indexes'. PHP_EOL .'Deny from all');
                     fclose($fileHandle);
                 }
             } else {
