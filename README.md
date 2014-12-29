@@ -36,27 +36,45 @@ This is an independent database package that is being worked on for the [Tres Fr
 - RIGHT JOINS
 - UNIONS
 
+## Logs
+Trestle automatically creates logs for query request which can help identify slow queries and possible abuse from users. Query failures and database failures are also logged, they show deeper information about an error like codes and examples. All logs are stored chronologically in their respect directory.
+
+Example:
+```
+/src/Trestle/logs/
+- database/
+- - 2014-12-28.000.log
+- query/
+- - 2014-12-30.000.log
+- request/
+- - 2014-12-28.000.log
+- - 2014-12-29.000.log
+- - 2014-12-30.000.log
+```
+
 ## Examples
 ### Start Trestle
 ```php
 // Autoload
 spl_autoload_register(function($class){
-	$file = dirname(__DIR__).'/src/'.str_replace('\\', '/', $class.'.php');
+    $dirs = [
+        dirname(dirname(__DIR__)).'/src/'
+    ];
 
-	if(is_readable($file)){
-		require_once($file);
-	} else {
-		if(is_file($file)){
-			die($file.' is not readable.');
-		} else {
-			die($file.' does not exist.');
-		}
-	}
+    foreach($dirs as $dir){
+        $file = str_replace('\\', '/', rtrim($dir, '/').'/'.$class.'.php');
+
+        if(is_readable($file)){
+            require_once($file);
+            break;
+        }
+    }
 });
 
 $dbInfo = [
-    // Display PDO errors
-    'display_errors' => true,
+    'display_errors' => [
+        'query' => false,
+    ],
 
     'default' => 'MySQL1',
 
@@ -97,23 +115,21 @@ $dbInfo = [
 
 ];
 
-try {
-	// Set Config
-	Trestle\Config::set($dbInfo);
+set_exception_handler(function($e) {
+    echo '<b>' . get_class($e) . ':</b> ' . $e->getMessage();
+});
 
-	// Load Database 1
-	$db = new Trestle\Database('MySQL1');
-    // Load another database
-	$db2 = new Trestle\Database('MySQL2');
-	
-	// Build queries...
-    // Look below for examples
-    
-} catch(TrestleException $e) {
-	echo $e->getMessage();
-} catch(\Exception $e) {
-	die($e->getMessage());
-}
+// Set Config
+Trestle\Config::set($dbInfo);
+
+// Load Database 1
+$db = new Trestle\Database('MySQL1');
+
+// Load another database
+$db2 = new Trestle\Database('MySQL2');
+
+// Build queries...
+// Look below for examples
 ```
 
 ### Raw Query
