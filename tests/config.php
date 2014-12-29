@@ -1,7 +1,9 @@
 <?php
 return [
     
-    'display_errors' => true,
+    'display_errors' => [
+        'query' => false,
+    ],
     
     'default' => 'MySQL1',
     
@@ -29,17 +31,17 @@ return [
         
     ],
     
-    'logs' => [
-        'dir' => [
+    // 'logs' => [
+        // 'dir' => [
             // 'path'        => __DIR__.'/logs',
             //'permissions' => '',
-        ],
+        // ],
         
         //'file' => [
             //'ext'         => '',
             //'size'        => '',
             //'permissions' => '',
         //],
-    ],
+    // ],
     
 ];
