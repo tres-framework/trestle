@@ -40,13 +40,6 @@ namespace Trestle {
         protected $_db;
 
         /**
-         * The logger used to calculate execution time and make reports.
-         *
-         * @var \Trestle\Log
-         */
-        protected $_log;
-
-        /**
          * The values to bind to the query.
          *
          * @var array
@@ -79,10 +72,9 @@ namespace Trestle {
          * @param \Trestle\Process $db  The database instance.
          * @param \Trestle\Log     $log The logger.
          */
-        public function __construct(Process $db, Log $log) {
+        public function __construct(Process $db) {
             $this->_db = $db;
-            $this->_log = $log;
-            $this->_log->start('build');
+            Log::start('build');
         }
 
         /**
@@ -108,7 +100,7 @@ namespace Trestle {
                     'query'     => (empty(trim($query)) ? 'No query' : $query),
                     'binds'     => $this->_bindings,
                     'execution' => [],
-                ], $this->_log);
+                ]);
             }
         }
 

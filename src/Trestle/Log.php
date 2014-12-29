@@ -23,45 +23,60 @@ namespace Trestle {
          *
          * @var string
          */
-        private $_directory;
+        private static $_directory;
+        
+        
+        
+        
+        private static $_baseDirectory;
         
         /**
          * The permissions for the log directory.
          * 
          * @var int
          */
-        private $_directoryPermissions = 0777;
+        private static $_directoryPermissions = 0777;
         
         /**
          * The extension for the log file.
          * 
          * @var string
          */
-        private $_fileExtension = 'log';
+        private static $_fileExtension = 'log';
         
         /**
          * The permissions for log files.
          * 
          * @var int
          */
-        private $_filePermissions = 0755;
+        private static $_filePermissions = 0755;
         
         /**
          * The threshold for the file size.
          * 
          * @var int
          */
-        private $_fileMaxSize = 2097152; // 2MB
+        private static $_fileMaxSize = 2097152; // 2MB
         
         /**
-         * The new line indicator.
+         * Registered log types
          */
-        const CRLF = PHP_EOL;
+        private static $_registered = [];
+        
+        /**
+         * Start times for timing
+         * 
+         * @var array
+         */
+        private static $_starttime;
         
         /**
          * Sets the log directory.
+         * 
+         * @param  array Array of config options
+         * @return void  
          */
-        public function __construct($config = array()) {
+        public static function init($config = array()) {
             // Set dir
             if(isset($config['dir']['path']) && !empty($config['dir']['path'])) {
                 $dir = $config['dir']['path'];
@@ -69,22 +84,23 @@ namespace Trestle {
                 $dir = __DIR__ . '/logs';
             }
             
-            $this->_directory = rtrim($dir, '/').'/';
+            self::$_directory     = rtrim($dir, '/').'/';
+            self::$_baseDirectory = self::$_directory;
             
             // Make the dir
-            $this->_generateDir();
+            self::_generateDir();
             
             // Set Directory Permission
             if(isset($config['dir']['permissions']) &&
                !empty($config['dir']['permissions']) &&
                is_int($config['dir']['permissions'])
             ){
-                $this->_directoryPermissionsPermissions = $config['dir']['permissions'];
+                self::$_directoryPermissionsPermissions = $config['dir']['permissions'];
             }
             
             // Set File Extension
             if(isset($config['file']['extension']) && !empty($config['file']['extension'])) {
-                $this->_fileExtension = $config['file']['extension'];
+                self::$_fileExtension = $config['file']['extension'];
             }
             
             // Set File Permission
@@ -92,7 +108,7 @@ namespace Trestle {
                !empty($config['file']['permissions']) &&
                is_int($config['file']['permissions'])
             ){
-                $this->_filePermissions = $config['file']['permissions'];
+                self::$_filePermissions = $config['file']['permissions'];
             }
             
             // Set File Max Size
@@ -100,7 +116,7 @@ namespace Trestle {
                !empty($config['file']['size']) &&
                is_int($config['file']['size'])
             ){
-                $this->_fileMaxSize = $config['file']['size'];
+                self::$_fileMaxSize = $config['file']['size'];
             }
         }
         
@@ -110,14 +126,14 @@ namespace Trestle {
          * @param string $instance A special marker for creating multiple instances.
          * @return void
          */
-        public function start($instance = null) {
+        public static function start($instance = null) {
             $mtime = microtime();
             $mtime = explode(" ", $mtime);
             $mtime = $mtime[1] + $mtime[0];
             if(isset($instance)) {
-                $this->starttime[$instance] = $mtime;
+                self::$_starttime[$instance] = $mtime;
             }
-            $this->starttime['default_total'] = $mtime;
+            self::$_starttime['default_total'] = $mtime;
         }
         
         /**
@@ -126,8 +142,8 @@ namespace Trestle {
          * @param string $instance  A special marker for creating multiple instances.
          * @return int   $totaltime The total amount of time from start() to end().
          */
-        public function end($instance = null) {
-            if(empty($this->starttime)) {
+        public static function end($instance = null) {
+            if(empty(self::$_starttime)) {
                 throw new LogException('The Log class must have a start() method initiated.');
             }
             $mtime     = microtime();
@@ -135,9 +151,9 @@ namespace Trestle {
             $endtime   = $mtime[1] + $mtime[0];
             
             if(isset($instance)) {
-                $totaltime = ($endtime - $this->starttime[$instance]);
+                $totaltime = ($endtime - self::$_starttime[$instance]);
             } else {
-                $totaltime = ($endtime - $this->starttime['default_total']);
+                $totaltime = ($endtime - self::$_starttime['default_total']);
             }
             
             return $totaltime;
@@ -149,24 +165,57 @@ namespace Trestle {
          * @param  string $log The log message.
          * @return void
          */
-        public function log($log) {
+        public static function msg($log) {
+            // self::$_subDirectory = '';
+            
             $date = new DateTime('now');
             
             if(isset($log) && !empty($log)) {
                 // Make dir if needed
-                if(!is_dir($this->_directory) && !$this->_generateDir()){
+                if(!is_dir(self::$_directory) && !self::_generateDir()){
                     throw new LogException('Could not find, nor create a log directory.');
                 }
                 // Make security file if needed
-                $this->_generateSecurity();
+                self::_generateSecurity();
                 // Get current user ip
                 $ip = $_SERVER['REMOTE_ADDR'];
+                if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+                    $ip = array_pop(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']));
+                }
                 // Log the message
-                $this->_logMessage(
-                    $this->_generateFilename($date->format('Y-m-d')),
+                self::_logMessage(
+                    self::_generateFilename($date->format('Y-m-d')),
                     "[{$date->format('Y-m-d h:m:s')}] [{$ip}] " . $log
                 );
             }
+        }
+        
+        /**
+         * Catches special logs that use sub directories.
+         *
+         * @param string $log The type of log
+         * @param array  $msg The message to report
+         * @return void
+         */
+        public static function __callStatic($log, $msg) {
+            if(in_array($log, self::$_registered)) {
+                self::$_directory = self::$_baseDirectory . strtolower($log) . '/';
+                self::msg($msg[0]);
+                self::$_directory = self::$_baseDirectory;
+            } else {
+                $debug = debug_backtrace()[0];
+                throw new LogException('"' . $log . '" is not a register log type; used in ' . $debug['file'] . ' on ' . $debug['line']);
+            }
+        }
+        
+        /**
+         * Registers a name in the allowed type of logs.
+         *
+         * @param string $register The type of log to register
+         * @return void
+         */
+        public static function register($register) {
+            self::$_registered[] = strtolower($register);
         }
         
         /**
@@ -175,11 +224,11 @@ namespace Trestle {
          * @param  void    
          * @return boolean 
          */
-        private function _generateDir() {
+        private static function _generateDir() {
             // Do we need to make the dir?
-            if(!file_exists($this->_directory)) {
-                $status = mkdir($this->_directory, $this->_directoryPermissions, true);
-                $this->_generateSecurity();
+            if(!file_exists(self::$_directory)) {
+                $status = mkdir(self::$_directory, self::$_directoryPermissions, true);
+                self::_generateSecurity();
             } else {
                 $status = true;
             }
@@ -192,12 +241,12 @@ namespace Trestle {
          * 
          * @return bool
          */
-        private function _generateSecurity() {
-            $file = $this->_directory . '.htaccess';
+        private static function _generateSecurity() {
+            $file = self::$_directory . '.htaccess';
             
-            if(is_writable($this->_directory)) {
+            if(is_writable(self::$_directory)) {
                 if(!file_exists($file) && $fileHandle = fopen($file, 'w')){
-                    chmod($file, $this->_filePermissions);
+                    chmod($file, self::$_filePermissions);
                     fwrite($fileHandle, 'Options -Indexes'. PHP_EOL .'Deny from all');
                     fclose($fileHandle);
                 }
@@ -214,7 +263,7 @@ namespace Trestle {
          * @param  int    $number The file sub number.
          * @return string         The filename.
          */
-        private function _generateFilename($date, $number = 0) {
+        private static function _generateFilename($date, $number = 0) {
             // Number safety: in case you are creating more than 999 files
             if($number > 999) {
                 $float = 3 + floor($number / 999);
@@ -223,25 +272,25 @@ namespace Trestle {
             }
             
             // Ex. format: 2014-11-23.000.log
-            $file  = $this->_directory;
+            $file  = self::$_directory;
             $file .= $date.'.'.str_pad($number, $float, '0', STR_PAD_LEFT);
-            $file .= '.'.$this->_fileExtension;
+            $file .= '.'.self::$_fileExtension;
             
             if(is_file($file)) {
                 if(is_readable($file) && is_writable($file)) {
-                    return (filesize($file) < $this->_fileMaxSize) ? $file : $this->_generateFilename($date, ++$number);
+                    return (filesize($file) < self::$_fileMaxSize) ? $file : self::_generateFilename($date, ++$number);
                 } else {
                     throw new LogException('Unable to read or write to log file.');
                 }
             } else {
-                if(is_writable($this->_directory) && $fileHandle = fopen($file, 'w')){
-                    chmod($file, $this->_filePermissions);
+                if(is_writable(self::$_directory) && $fileHandle = fopen($file, 'w')){
+                    chmod($file, self::$_filePermissions);
                     fclose($fileHandle);
                 } else {
                     throw new LogException('Cannot create/write to file. Permission denied.');
                 }
                 
-                return $this->_generateFilename($date, $number);
+                return self::_generateFilename($date, $number);
             }
         }
         
@@ -251,9 +300,9 @@ namespace Trestle {
          * @param  string $path The file to log to.
          * @param  string $log  The message to log.
          */
-        private function _logMessage($path, $log) {
+        private static function _logMessage($path, $log) {
             $file = fopen($path, "a");
-            fwrite($file, $log.self::CRLF.self::CRLF);
+            fwrite($file, $log . PHP_EOL . PHP_EOL);
             fclose($file);
         }
         

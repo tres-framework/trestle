@@ -79,9 +79,14 @@ namespace Trestle {
                 } else {
                     throw new DatabaseException('Unable to locate "' . $connection . '" config.');
                 }
-
-                $this->log = new Log(Config::get('logs'));
-
+                
+                // Initiate Logger
+                Log::init(Config::get('logs'));
+                // Register log types
+                Log::register('database');
+                Log::register('request');
+                Log::register('query');
+                
                 $this->_process = new Process();
                 $this->_process->connection($this->_config);
             } catch(Exception $e) {
@@ -102,14 +107,14 @@ namespace Trestle {
                 if(in_array($method, ['query', 'create', 'get', 'update', 'delete'])) {
 
                     // Start new log count
-                    $this->log->start('total');
+                    Log::start('total');
 
                     // Build blueprint
                     $driver = "Trestle\blueprints\\{$this->_config['driver']}";
 
                     $reflection = new ReflectionMethod($driver, $method);
 
-                    return $reflection->invokeArgs(new $driver($this->_process, $this->log), $args);
+                    return $reflection->invokeArgs(new $driver($this->_process), $args);
 
                 } else {
                     throw new DatabaseException('Trestle was unable to recognize your database call.');

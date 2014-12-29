@@ -34,11 +34,6 @@ namespace Trestle {
         private $_debug = [];
         
         /**
-         * The new line indicator.
-         */
-        const CRLF = PHP_EOL;
-        
-        /**
          * Instantiates the connection of the database.
          *
          * @param  array  $config The database config.
@@ -58,13 +53,15 @@ namespace Trestle {
                     $config['password']
                 );
                 
-                if(Config::get('display_errors')) {
-                    $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                }
+                $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 
                 return $this->_connection;
             } catch(PDOException $e) {
-                throw new DatabaseException('Trestle could not connect to the database, please check your database configuration.');
+                $error  = 'Trestle could not connect to the database.';
+                $msg  = $error.PHP_EOL;
+                $msg .= "|-> " . $e->getMessage();
+                Log::database($msg);
+                throw new DatabaseException($error . '  Please check your database configuration and the logs for more information.');
             }
         }
         
@@ -74,15 +71,12 @@ namespace Trestle {
          * @param  string $statement The query to parse.
          * @param  array  $binds     The values to bind to the string.
          * @param  array  $debug     The debug information from the blueprint.
-         * @param  object $log       The Log instance of the current query.
          * @return object
          */
-        public function query($statement, array $binds = array(), array $debug = array(), Log $log = null) {
+        public function query($statement, array $binds = array(), array $debug = array()) {
             try {
-                if(isset($log) && $log instanceof Log) {
-                    $log->start('query');
-                }
-                   
+                Log::start('query');
+                
                 $this->_debug = $debug;
                 $this->statement = $this->_connection->prepare($statement);
                 
@@ -98,7 +92,7 @@ namespace Trestle {
                         } elseif(is_string($bind)) {
                             $param = PDO::PARAM_STR;
                         } else {
-                            $param = false; // NOTE: Must log and throw exception or default to string(?)
+                            $param = null;
                         }
                         
                         $this->statement->bindValue($key, $bind, $param);
@@ -110,28 +104,34 @@ namespace Trestle {
                     $this->status = true;
                 } else {
                     $this->status = false;
-                    if(isset($log) && $log instanceof Log) {
-                        $log->log("Query failed!\r\n|-> {$this->_debug['query']}");
-                    }
-                    throw new QueryException('Query failed, check Trestle logs.');
                 }
                 
                 // Logs
-                if(isset($log) && $log instanceof Log) {
-                    $this->_debug['execution']['build'] = $log->end('build');
-                    $this->_debug['execution']['query'] = $log->end('query');
-                    $this->_debug['execution']['total'] = $log->end('total');
-                    
-                    $msg  = self::CRLF;
-                    $msg .= "|-> Query executed in {$this->_debug['execution']['total']} seconds.".self::CRLF;
-                    $msg .= "|-> Called in {$this->_debug['called']['file']}"
-                           ." on line {$this->_debug['called']['line']}".self::CRLF;
-                    $msg .-" |-> {$this->_debug['query']}";
-                    
-                    $log->log($msg);
-                }
+                $this->_debug['execution']['build'] = Log::end('build');
+                $this->_debug['execution']['query'] = Log::end('query');
+                $this->_debug['execution']['total'] = Log::end('total');
+                
+                $msg  = "Query Request".PHP_EOL;
+                $msg .= "|-> ".$this->_debug['query'].PHP_EOL;
+                $msg .= "|-> Query executed in {$this->_debug['execution']['total']} seconds.".PHP_EOL;
+                $msg .= "|-> Called in {$this->_debug['called']['file']} on line {$this->_debug['called']['line']}".PHP_EOL;
+                $msg .-" |-> {$this->_debug['query']}";
+                
+                Log::request($msg);
+                
             } catch(PDOException $e) {
                 $this->_debug['error'] = $e->getMessage();
+                
+                $msg  = "Query failed!".PHP_EOL;
+                $msg .= "|-> " . $this->_debug['query'].PHP_EOL;
+                $msg .= "|-> " . $this->_debug['error'].PHP_EOL;
+                
+                Log::query($msg);
+                
+                if(Config::get('display_errors/query')) {
+                    throw new QueryException($this->_debug['error']);
+                }
+                
             }
             
             return $this;

@@ -31,8 +31,8 @@ namespace Trestle\blueprints {
          *
          * @param  \Trestle\Process $db The Database instance for the query.
          */
-        public function __construct(Process $db, Log $log) {
-            parent::__construct($db, $log);
+        public function __construct(Process $db) {
+            parent::__construct($db);
         }
 
         /**
