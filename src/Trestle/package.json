@@ -1,6 +1,6 @@
 {
     "name": "Trestle",
-    "version": "0.1",
+    "version": "0.2",
     "website": "http://tresframework.com",
     "documentation": "https://github.com/tres-framework/docs/blob/master/trestle.md",
     "description_short": "A database wrapper using fluent interface.",

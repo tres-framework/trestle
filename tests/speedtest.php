@@ -39,7 +39,7 @@ echo ($create->status() ? 'Successfully' : 'Failed to') . ' created new user!';
 if($create->status()) {
     echo ' Created with:';
     $users = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])->exec();
-    echo '<pre>'; print_r($users->first()); echo '</pre>';
+    echo '<pre>'; print_r($users->result()); echo '</pre>';
 }
 
 echo '<hr />';
@@ -61,7 +61,7 @@ echo ($update->status() ? 'Successfully ' : 'Failed to ') . 'updated user!';
 if($update->status()) {
     echo ' Updated with:';
     $users = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])->exec();
-    echo '<pre>'; print_r($users->first()); echo '</pre>';
+    echo '<pre>'; print_r($users->result()); echo '</pre>';
 }
 
 echo '<hr />';

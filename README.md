@@ -139,7 +139,7 @@ $db2 = new Trestle\Database('MySQL2');
 // SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
 $users = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', 1)
             ->exec();
-echo '<pre>'; print_r($users->first()); echo '</pre>';
+echo '<pre>'; print_r($users->result()); echo '</pre>';
 ```
 
 ### Get (first or only row)
@@ -150,7 +150,7 @@ echo '<pre>'; print_r($users->first()); echo '</pre>';
 $users = $db->get('users', ['username', 'firstname', 'email'])
             ->where('id', '=', 1)
             ->exec();
-echo '<pre>'; print_r($users->first()); echo '</pre>';
+echo '<pre>'; print_r($users->result()); echo '</pre>';
 ```
 
 ### Get (all rows + count rows)
@@ -271,7 +271,7 @@ $foobar = $db->query('...')
 // Get all
 $foobar->results();
 // Get first
-$foobar->first();
+$foobar->result();
 // Get count
 $foobar->count();
 // Get status of query success (boolean)

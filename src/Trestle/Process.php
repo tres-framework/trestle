@@ -53,6 +53,7 @@ namespace Trestle {
                     $config['password']
                 );
                 
+                $this->_connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
                 $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 
                 return $this->_connection;
@@ -106,7 +107,7 @@ namespace Trestle {
                     $this->status = false;
                 }
                 
-                // Logs
+                // Track log times
                 $this->_debug['execution']['build'] = Log::end('build');
                 $this->_debug['execution']['query'] = Log::end('query');
                 $this->_debug['execution']['total'] = Log::end('total');
@@ -136,23 +137,25 @@ namespace Trestle {
             
             return $this;
         }
-        
+		
         /**
          * Returns all the results of a query.
-         *
+         * 
+		 * @param string $fetch The fetch mode
          * @return array|object
          */
-        public function results() {
-            return $this->statement->fetchAll(PDO::FETCH_OBJ);
+        public function results($fetch = PDO::FETCH_OBJ) {
+            return $this->statement->fetchAll($fetch);
         }
         
         /**
          * Returns the first result from the query.
-         *
+         * 
+		 * @param string $fetch The fetch mode
          * @return object
          */
-        public function first() {
-            return $this->statement->fetch(PDO::FETCH_OBJ);
+        public function result($fetch = PDO::FETCH_OBJ) {
+            return $this->statement->fetch($fetch);
         }
         
         /**

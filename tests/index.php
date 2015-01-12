@@ -22,7 +22,7 @@ $db2 = new Trestle\Database('MySQL2');
 $users = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])
             ->exec();
 echo '<pre>'; print_r($users->debug()['query']); echo '</pre>';
-echo '<pre>'; print_r($users->first()); echo '</pre>';
+echo '<pre>'; print_r($users->result()); echo '</pre>';
 echo '<hr />';
 
 
@@ -46,7 +46,8 @@ $users = $db->get('users')
             ->limit(5)
             ->exec();
 echo '<pre>'; print_r($users->debug()['query']); echo '</pre>';
-echo '<pre>'; print_r($users->results()); echo '</pre>';
+echo '<pre>'; print_r($users->results(PDO::FETCH_ASSOC)); echo '</pre>';
+echo 'test';
 echo '<pre>COUNT: ' . $users->count() . ' results found...</pre>';
 echo '<hr />';
 
