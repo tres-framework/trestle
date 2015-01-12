@@ -2,7 +2,7 @@
 return [
     
     'display_errors' => [
-        'query' => false,
+        'query' => true,
     ],
     
     'default' => 'MySQL1',
