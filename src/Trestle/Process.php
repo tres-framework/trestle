@@ -62,7 +62,12 @@ namespace Trestle {
                 $msg  = $error.PHP_EOL;
                 $msg .= "|-> " . $e->getMessage();
                 Log::database($msg);
-                throw new DatabaseException($error . '  Please check your database configuration and the logs for more information.');
+                if(Config::get('throw/database')) {
+                    $errorDetails = $e->getMessage();
+                } else {
+                    $errorDetails = "Please check your database configuration and the logs for more information.";
+                }
+                throw new DatabaseException($error . ' ' . $errorDetails);
             }
         }
         
@@ -129,7 +134,7 @@ namespace Trestle {
                 
                 Log::query($msg);
                 
-                if(Config::get('display_errors/query')) {
+                if(Config::get('throw/query')) {
                     throw new QueryException($this->_debug['error']);
                 }
                 

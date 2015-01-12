@@ -1,8 +1,9 @@
 <?php
 return [
     
-    'display_errors' => [
-        'query' => true,
+    'throw' => [
+        'database' => true,
+        'query'    => true,
     ],
     
     'default' => 'MySQL1',
