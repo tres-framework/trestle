@@ -63,7 +63,7 @@ namespace Trestle\blueprints {
          */
         public function get($table, $columns = null) {
             $this->_backtrace[] = __METHOD__;
-
+            
             $this->_setStructure([
                 "SELECT",
                 "~columns",
@@ -76,13 +76,13 @@ namespace Trestle\blueprints {
                 "~limit",
             ]);
             
+            $this->_structure['table'] = $this->_generateWrapList($table, $this->_varWrapper);
+            
             if(!empty($columns)){
                 $this->_structure['columns'] = $this->_generateWrapList($columns);
             } else {
                 $this->_structure['columns'] = '*';
             }
-            
-            $this->_structure['table'] = $this->_generateWrapList($table, $this->_varWrapper);
             
             return $this;
         }
@@ -285,17 +285,13 @@ namespace Trestle\blueprints {
          * @param  string $order  Either ASC|DESC; the order.
          * @return object $this
          */
-        public function order($fields, $order){
+        public function order($fields, $order = 'ASC'){
             $this->_backtrace[] = __METHOD__;
-
+            // ORDER BY
             $this->_structure['order'] = "ORDER BY ";
+            // Wrap fields
             // We might want to consider validation
-            if(is_array($fields)) {
-                $this->_structure['order'] .= $this->_generateBindList(count($fields)) . ' ';
-            } else {
-                $this->_structure['order'] .= '? ';
-            }
-            $this->_bind['order'] = $fields;
+            $this->_structure['order'] .= $this->_generateWrapList($fields, $this->_varWrapper) . ' ';
             // Should we assume an order?
             if(in_array($order, ['ASC', 'DESC'])) {
                 $this->_structure['order'] .= $order;
