@@ -19,3 +19,14 @@ $users = $db->get(['posts', 'users'], ['posts.id', 'posts.title', 'users.usernam
 echo '<pre>'; print_r($users->debug()['query']); echo '</pre>';
 echo '<pre>'; print_r($users->results()); echo '</pre>';
 echo '<pre>'; print_r($users->debug()); echo '</pre>';
+
+echo '<hr />';
+
+$users = $db->get('posts', ['posts.id', 'posts.title'])
+            ->join('users', ['users.username'])
+            ->on('posts.author', '=', 'users.id')
+            ->where('date', '>', '2014-11-30')
+            ->exec();
+echo '<pre>'; print_r($users->debug()['query']); echo '</pre>';
+echo '<pre>'; print_r($users->results()); echo '</pre>';
+echo '<pre>'; print_r($users->debug()); echo '</pre>';

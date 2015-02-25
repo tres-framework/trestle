@@ -65,7 +65,7 @@ namespace Trestle {
          * @var array
          */
         protected $_backtrace = [];
-        
+        protected $_global = [];
         /**
          * Loads in the database.
          *
@@ -128,7 +128,6 @@ namespace Trestle {
             if(!isset($this->pattern)) {
                 throw new QueryException('Can\'t build query, no query structure set in master method!');
             }
-            
             $i = 0;
             $query = '';
             foreach($this->pattern as $bit) {
@@ -155,6 +154,9 @@ namespace Trestle {
          * Adds a bind to the bindings var to be used later in the query.
          * Also checks for valid binds, filters out blanks and merges the
          * arrays together
+         * 
+         * @param  string|array $value An array of the binds for the query
+         * @return void
          */
         private function _addBind($value) {
             $checkNamed      = false;
@@ -192,15 +194,27 @@ namespace Trestle {
          * to arrays.
          *
          * @param  array|string $values The value(s) to wrap.
-         * @param  string       $varWrapper The string to wrap around values.
          * @return string       The wrapped content.
          */
-        protected function _generateWrapList($values, $varWrapper = null) {
-            if(is_array($values)) {
-                return $varWrapper . implode("{$varWrapper}, {$varWrapper}", $values) . $varWrapper;
-            } else {
-                return $varWrapper . $values . $varWrapper;
+        protected function _stringWrapper($values) {
+            foreach((array)$values as $string) {
+                if($table = strstr($string, '.', true)) {
+                    if(in_array($table, $this->_global['tables'])) {
+                        $pos = strpos($string, '.');
+                        if($pos !== false) {
+                            $string = substr_replace(
+                                $string,
+                                $this->_varWrapper . "." . $this->_varWrapper,
+                                $pos,
+                                strlen('.')
+                            );
+                        }
+                    }
+                }
+                
+                $allStrings[] = $this->_varWrapper . $string . $this->_varWrapper;
             }
+            return implode(', ', $allStrings);
         }
         
         /**
@@ -234,14 +248,14 @@ namespace Trestle {
                 $data  = '';
                 $i     = 1;
                 foreach($values as $key => $value) {
-                    $data .= $varWrapper . $key . $varWrapper . ' = ?';
+                    $data .= $this->_stringWrapper($key) . ' = ?';
                     if($i < $count) {
                         $data .= ', ';
                     }
                     $i++;
                 }
             } else {
-                $data = $varWrapper . $key . $varWrapper . ' = ?';
+                $data = $this->_stringWrapper($key) . ' = ?';
             }
             return $data;
         }
