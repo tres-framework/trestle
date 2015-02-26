@@ -55,7 +55,7 @@ echo '<pre>'; print_r($data->result()); echo '</pre>';
 
 // Option 2
 // Load configs from another file
-$dbInfo = include('config.php');
+$dbInfo = include('includes/config.php');
 
 Trestle\Config::set($dbInfo);
 
