@@ -19,15 +19,17 @@ namespace Trestle {
     class Log {
         
         /**
-         * The log directory.
+         * The active log directory.
          *
          * @var string
          */
         private static $_directory;
         
-        
-        
-        
+        /**
+         * The base log directory.
+         *
+         * @var string
+         */
         private static $_baseDirectory;
         
         /**
@@ -171,18 +173,17 @@ namespace Trestle {
             $date = new DateTime('now');
             
             if(isset($log) && !empty($log)) {
-                // Make dir if needed
                 if(!is_dir(self::$_directory) && !self::_generateDir()){
                     throw new LogException('Could not find, nor create a log directory.');
                 }
-                // Make security file if needed
+
                 self::_generateSecurity();
-                // Get current user ip
+
                 $ip = $_SERVER['REMOTE_ADDR'];
                 if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
                     $ip = array_pop(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']));
                 }
-                // Log the message
+                
                 self::_logMessage(
                     self::_generateFilename($date->format('Y-m-d')),
                     "[{$date->format('Y-m-d h:m:s')}] [{$ip}] " . $log
@@ -225,7 +226,6 @@ namespace Trestle {
          * @return boolean 
          */
         private static function _generateDir() {
-            // Do we need to make the dir?
             if(!file_exists(self::$_directory)) {
                 $status = mkdir(self::$_directory, self::$_directoryPermissions, true);
                 self::_generateSecurity();
@@ -264,14 +264,13 @@ namespace Trestle {
          * @return string         The filename.
          */
         private static function _generateFilename($date, $number = 0) {
-            // Number safety: in case you are creating more than 999 files
             if($number > 999) {
                 $float = 3 + floor($number / 999);
             } else {
                 $float = 3;
             }
             
-            // Ex. format: 2014-11-23.000.log
+            // Ex. format: YYYY-MM-DD.xxx.log
             $file  = self::$_directory;
             $file .= $date.'.'.str_pad($number, $float, '0', STR_PAD_LEFT);
             $file .= '.'.self::$_fileExtension;

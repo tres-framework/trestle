@@ -56,8 +56,6 @@ namespace Trestle {
 
             self::$_config = array_merge(self::$_config, $config);
 
-            // Should we validate the connection?
-            // This is recommended.
             if(self::$_config['validation'] === true) {
                 // Make sure each connection is valid.
                 foreach($config['connections'] as $name => $connection) {

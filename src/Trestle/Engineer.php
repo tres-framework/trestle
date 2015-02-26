@@ -170,7 +170,6 @@ namespace Trestle {
                         } else {
                             $checkNamed      = true;
                         }
-                        // Check named vs positional status
                         if($checkNamed != $checkPositional) {
                             $this->_bindings[$k] = $v;
                         } else {

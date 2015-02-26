@@ -237,7 +237,6 @@ namespace Trestle\blueprints {
          * @return object       $this
          */
         public function where($field, $operator, $value, $rawBind = false, $prefix = null) {
-            // Avoid tracking andWhere/orWhere along side where
             if(!in_array(explode("::", end($this->_backtrace))[1], ['andWhere', 'orWhere'])) {
                 $this->_backtrace[] = __METHOD__;
             }
@@ -337,12 +336,8 @@ namespace Trestle\blueprints {
          */
         public function order($fields, $order = 'ASC'){
             $this->_backtrace[] = __METHOD__;
-            // ORDER BY
             $this->_structure['order'] = "ORDER BY ";
-            // Wrap fields
-            // We might want to consider validation
             $this->_structure['order'] .= $this->_stringWrapper($fields, $this->_varWrapper) . ' ';
-            // Should we assume an order?
             if(in_array($order, ['ASC', 'DESC'])) {
                 $this->_structure['order'] .= $order;
             } else {
@@ -377,7 +372,6 @@ namespace Trestle\blueprints {
         public function offset($offset) {
             $this->_backtrace[] = __METHOD__;
 
-            //  Better debugging should be supplied
             if(!is_int($offset)) {
                 throw new QueryException('The offset method must be supplied an integer.');
             }

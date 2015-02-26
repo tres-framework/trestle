@@ -80,9 +80,8 @@ namespace Trestle {
                     throw new DatabaseException('Unable to locate "' . $connection . '" config.');
                 }
                 
-                // Initiate Logger
                 Log::init(Config::get('logs'));
-                // Register log types
+                
                 Log::register('database');
                 Log::register('request');
                 Log::register('query');
@@ -106,10 +105,8 @@ namespace Trestle {
                 $method = strtolower($method);
                 if(in_array($method, ['query', 'create', 'get', 'update', 'delete'])) {
 
-                    // Start new log count
                     Log::start('total');
 
-                    // Build blueprint
                     $driver = "Trestle\blueprints\\{$this->_config['driver']}";
 
                     $reflection = new ReflectionMethod($driver, $method);

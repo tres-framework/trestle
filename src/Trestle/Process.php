@@ -112,7 +112,6 @@ namespace Trestle {
                     $this->status = false;
                 }
                 
-                // Track log times
                 $this->_debug['execution']['build'] = Log::end('build');
                 $this->_debug['execution']['query'] = Log::end('query');
                 $this->_debug['execution']['total'] = Log::end('total');
