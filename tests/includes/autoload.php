@@ -1,5 +1,4 @@
 <?php
-
 spl_autoload_register(function($class){
     $dirs = [
         dirname(dirname(__DIR__)).'/src/'

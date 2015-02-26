@@ -1,6 +1,5 @@
 <?php
 return [
-    
     'throw' => [
         'database' => true,
         'query'    => true,
@@ -9,7 +8,6 @@ return [
     'default' => 'MySQL1',
     
     'connections' => [
-        
         'MySQL1' => [
             'driver'    => 'MySQL',
             'database'  => 'trestle_1',
@@ -19,7 +17,6 @@ return [
             'username'  => 'root',
             'password'  => ''
         ],
-        
         'MySQL2' => [
             'driver'    => 'MySQL',
             'database'  => 'trestle_2',
@@ -29,29 +26,11 @@ return [
             'username'  => 'root',
             'password'  => ''
         ],
-        
-        'MySQL3' => [
-            'driver'    => 'MySQL',
-            'database'  => 'trestle_bugs',
-            'host'      => '127.0.0.1',
-            'port'      => '3306',
-            'charset'   => 'utf8',
-            'username'  => 'root',
-            'password'  => ''
-        ]
     ],
     
-    // 'logs' => [
-        // 'dir' => [
-            // 'path'        => __DIR__.'/logs',
-            //'permissions' => '',
-        // ],
-        
-        //'file' => [
-            //'ext'         => '',
-            //'size'        => '',
-            //'permissions' => '',
-        //],
-    // ],
-    
+    'logs' => [
+        'dir' => [
+            'path'        => __DIR__.'/../logs',
+        ],
+    ],
 ];

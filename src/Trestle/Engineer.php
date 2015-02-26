@@ -147,7 +147,7 @@ namespace Trestle {
                 }
                 
             }
-            return $query;
+            return rtrim($query);
         }
 
         /**

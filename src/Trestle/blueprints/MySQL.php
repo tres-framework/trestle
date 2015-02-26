@@ -180,7 +180,7 @@ namespace Trestle\blueprints {
             
             if(!empty($columns)){
                 if($this->_structure['columns'] != '*') {
-                    $this->_structure['columns'] = $this->_structure['columns'] . ',' . $this->_stringWrapper($columns);
+                    $this->_structure['columns'] = $this->_structure['columns'] . ', ' . $this->_stringWrapper($columns);
                 } else {
                     $this->_structure['columns'] = $this->_stringWrapper($columns);
                 }
