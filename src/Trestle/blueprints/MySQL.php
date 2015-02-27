@@ -78,7 +78,12 @@ namespace Trestle\blueprints {
                 "~limit",
             ]);
             
-            $this->_global['tables'] = array_merge((array)$table);
+            if($this->_checkForTablesAndColumns($table)) {
+                $columns = $table;
+                $table   = $this->_parseTables($table);
+            }
+            
+            $this->_addTablesToGlobalTables($table);
             
             $this->_structure['table'] = $this->_stringWrapper($table);
             
@@ -167,29 +172,7 @@ namespace Trestle\blueprints {
         }
 
         /**
-         * Joins a table to the query
-         *
-         * @param  string $table The table to join
-         * @param  array|string $columns The fields to return.
-         * @return object $this
-         */
-        public function join($table, $columns = null) {
-            $this->_backtrace[] = __METHOD__;
-            $this->_global['tables'] = array_merge($this->_global['tables'], (array)$table);
-            $this->_structure['join'] = "JOIN " . $this->_stringWrapper($table);
-            
-            if(!empty($columns)){
-                if($this->_structure['columns'] != '*') {
-                    $this->_structure['columns'] = $this->_structure['columns'] . ', ' . $this->_stringWrapper($columns);
-                } else {
-                    $this->_structure['columns'] = $this->_stringWrapper($columns);
-                }
-            }
-            return $this;
-        }
-
-        /**
-         * Specifics what columns and data should be joined.
+         * Specifics what tables, columns and data should be joined.
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
@@ -198,17 +181,27 @@ namespace Trestle\blueprints {
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
-        public function on($field, $operator, $value) {
+        public function join($field, $operator, $value) {
             $this->_backtrace[] = __METHOD__;
             
-            if(empty($this->_structure['join'])) {
-                throw new QueryException('You can not call the on() method before calling the join() method.');
+            if(!$this->_checkForTablesAndColumns($field)) {
+                throw new QueryException('Unable to determine query to merge!');
+            } else {
+                $fieldTables = $this->_parseTables($field);
+                $valueTables = $this->_parseTables($value);
+                
+                $this->_addTablesToGlobalTables($fieldTables);
+                $this->_removeTablesFromGlobalTables($valueTables);
+                
+                $this->_structure['table'] = $this->_stringWrapper($this->_getGlobalTables());
+                $this->_structure['join'] = "JOIN " . $this->_stringWrapper($valueTables);
+                
+                $this->_structure['on'] = "ON " . 
+                    $this->_stringWrapper($field) . ' ' . 
+                    $operator . ' ' .
+                    $this->_stringWrapper($value);
             }
             
-            $this->_structure['on'] = "ON " . 
-                $this->_stringWrapper($field, $this->_varWrapper) . ' ' . 
-                $operator . ' ' .
-                $this->_stringWrapper($value);
             return $this;
         }
         
@@ -253,9 +246,9 @@ namespace Trestle\blueprints {
             
             if($rawBind === true) {
                 if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
-                    $binds = "{$value[0]} AND {$value[1]}";
+                    $binds = "{$this->_stringWrapper($value[0])} AND {$this->_stringWrapper($value[1])}";
                 } else {
-                    $binds = $value;
+                    $binds = $this->_stringWrapper($value);
                 }
             } else {
                 if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {

@@ -28,9 +28,9 @@ class GetTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testGetMultipleTables() {
-        $expects['query'] = 'SELECT * FROM `users`, `posts`';
+        $expects['query'] = 'SELECT * FROM `users`, `articles`';
         $expects['binds'] = [];
-        $query            = $this->db->get(['users', 'posts'])
+        $query            = $this->db->get(['users', 'articles'])
                                      ->exec();
 
         $this->assertEquals($expects['query'], $query->debug()['query']);
@@ -95,9 +95,9 @@ class GetTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testGetLimit() {
-        $expects['query'] = 'SELECT * FROM `posts` LIMIT ?';
+        $expects['query'] = 'SELECT * FROM `articles` LIMIT ?';
         $expects['binds'] = [1 => 3];
-        $query            = $this->db->get('posts')
+        $query            = $this->db->get('articles')
                                      ->limit(3)
                                      ->exec();
 
@@ -106,9 +106,9 @@ class GetTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testGetLimitAndOffset() {
-        $expects['query'] = 'SELECT * FROM `posts` LIMIT ?,?';
+        $expects['query'] = 'SELECT * FROM `articles` LIMIT ?,?';
         $expects['binds'] = [1 => 5, 2 => 3];
-        $query            = $this->db->get('posts')
+        $query            = $this->db->get('articles')
                                      ->limit(3)
                                      ->offset(5)
                                      ->exec();

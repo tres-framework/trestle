@@ -38,7 +38,14 @@ namespace Trestle {
          * @var \Trestle\Process
          */
         protected $_db;
-
+        
+        /**
+         * A variable to store global data that can be used anywere in the blueprint.
+         *
+         * @var array
+         */
+        protected $_global = [];
+        
         /**
          * The values to bind to the query.
          *
@@ -65,7 +72,7 @@ namespace Trestle {
          * @var array
          */
         protected $_backtrace = [];
-        protected $_global = [];
+        
         /**
          * Loads in the database.
          *
@@ -198,16 +205,14 @@ namespace Trestle {
         protected function _stringWrapper($values) {
             foreach((array)$values as $string) {
                 if($table = strstr($string, '.', true)) {
-                    if(in_array($table, $this->_global['tables'])) {
-                        $pos = strpos($string, '.');
-                        if($pos !== false) {
-                            $string = substr_replace(
-                                $string,
-                                $this->_varWrapper . "." . $this->_varWrapper,
-                                $pos,
-                                strlen('.')
-                            );
-                        }
+                    $pos = strpos($string, '.');
+                    if($pos !== false) {
+                        $string = substr_replace(
+                            $string,
+                            $this->_varWrapper . "." . $this->_varWrapper,
+                            $pos,
+                            strlen('.')
+                        );
                     }
                 }
                 
@@ -259,6 +264,93 @@ namespace Trestle {
             return $data;
         }
         
+        /**
+         * Checks if the array h
+         *
+         * @param  array   $values
+         * @return boolean True = Has table & column | False = Only table 
+         */
+        protected function _checkForTablesAndColumns($values) {
+            if(is_array($values)) {
+                // We only need to check the first value
+                $checkForColumns = $values[1];
+            } else {
+                $checkForColumns = $values;
+            }
+            
+           if(strpos($checkForColumns, '.') !== false) {
+                return true;
+           } else {
+               return false;
+           }
+        }
+        
+        /**
+         * Gets all the tables from an array of join tables
+         *
+         * @param  array|string $values
+         * @return array        Array of tables and columns
+         */
+        protected function _parseTables($values) {
+            $tables = [];
+            if(is_array($values)) {
+                foreach($values as $string) {
+                    if($table = strstr($string, '.', true)) {
+                        $tables[] = $table;
+                    }
+                }
+            } else {
+                $tables[] = strstr($values, '.', true);
+            }
+            
+            return array_unique($tables);
+        }
+        
+        /**
+         * Adds a table or an array of tables to the global $this->_global['table']
+         * 
+         * @param  array|string $table The table(s) to add to global tables
+         * @return void
+         */
+        protected function _addTablesToGlobalTables($table) {
+            if(is_array($table)) {
+                foreach($table as $t) {
+                    $this->_addTablesToGlobalTables($t);
+                }
+            } else {
+                $this->_global['tables'][] = $table;
+                $this->_global['tables'] = array_unique($this->_global['tables']);
+            }
+        }
+        
+        /**
+         * Removes a table or an array of tables from the global $this->_global['table']
+         * 
+         * @param  array|string $table The table(s) to remove from global tables
+         * @return void
+         */
+        protected function _removeTablesFromGlobalTables($table) {
+            if(is_array($table)) {
+                foreach($table as $t) {
+                    $this->_removeTablesFromGlobalTables($t);
+                }
+            } else {
+                if(($key = array_search($table, $this->_global['tables'])) !== false) {
+                    unset($this->_global['tables'][$key]);
+                }
+            }
+        }
+        
+        /**
+         * Returns a list of unique tables from $this->_global['table']
+         * 
+         * @param  void
+         * @return array List of tables
+         */
+        protected function _getGlobalTables() {
+            return array_unique($this->_global['tables']);
+        }
+        
     }
-
+    
 }
