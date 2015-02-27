@@ -26,7 +26,7 @@ return [
             'username'  => 'root',
             'password'  => 'password'
         ],
-    ]
+    ],
     
     'logs' => [
         'dir' => [

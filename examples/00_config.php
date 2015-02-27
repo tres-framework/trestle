@@ -1,6 +1,10 @@
 <?php
 require_once('includes/autoload.php');
 
+set_exception_handler(function($e) {
+    echo '<b>' . get_class($e) . ':</b> ' . $e->getMessage();
+});
+
 // Options 1
 // Load configs directly into method
 Trestle\Config::set([
@@ -30,7 +34,7 @@ Trestle\Config::set([
             'username'  => 'root',
             'password'  => 'password'
         ],
-    ]
+    ],
     
     'logs' => [
         'dir' => [

@@ -1,6 +1,10 @@
 <?php
 require_once('includes/autoload.php');
 
+set_exception_handler(function($e) {
+    echo '<b>' . get_class($e) . ':</b> ' . $e->getMessage();
+});
+
 Trestle\Config::set([
     'connections' => [
         'connection_name_1' => [
