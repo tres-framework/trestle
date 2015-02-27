@@ -185,7 +185,7 @@ namespace Trestle\blueprints {
             $this->_backtrace[] = __METHOD__;
             
             if(!$this->_checkForTablesAndColumns($field)) {
-                throw new QueryException('Unable to determine query to merge!');
+                throw new QueryException('Unable to determine table to join!');
             } else {
                 $fieldTables = $this->_parseTables($field);
                 $valueTables = $this->_parseTables($value);
