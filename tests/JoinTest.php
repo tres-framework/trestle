@@ -39,18 +39,56 @@ class JoinTest extends PHPUnit_Framework_TestCase {
         $expects['query'] = 'SELECT `articles`.`id`, `articles`.`title`, `users`.`username` FROM `articles` JOIN `users` ON `articles`.`author` = `users`.`id`';
         $expects['binds'] = [];
         $query            = $this->db->get(['articles.id', 'articles.title', 'users.username'])
-                                     ->join('articles.author', '=', 'users.id')
+                                     ->join('users')
+                                     ->on('articles.author', '=', 'users.id')
                                      ->exec();
 
         $this->assertEquals($expects['query'], $query->debug()['query']);
         $this->assertEquals($expects['binds'], $query->debug()['binds']);
 
         $query            = $this->db->get(['articles', 'users'], ['articles.id', 'articles.title', 'users.username'])
-                                     ->join('articles.author', '=', 'users.id')
+                                     ->join('users')
+                                     ->on('articles.author', '=', 'users.id')
                                      ->exec();
 
         $this->assertEquals($expects['query'], $query->debug()['query']);
         $this->assertEquals($expects['binds'], $query->debug()['binds']);
     }
-     
+    
+    public function testInnerJoinMethod() {
+        $expects['query'] = 'SELECT `articles`.`id`, `articles`.`title`, `users`.`username` FROM `articles` INNER JOIN `users` ON `articles`.`author` = `users`.`id`';
+        $expects['binds'] = [];
+        $query            = $this->db->get(['articles.id', 'articles.title', 'users.username'])
+                                     ->innerJoin('users')
+                                     ->on('articles.author', '=', 'users.id')
+                                     ->exec();
+
+        $this->assertEquals($expects['query'], $query->debug()['query']);
+        $this->assertEquals($expects['binds'], $query->debug()['binds']);
+    }
+    
+    public function testLeftJoinMethod() {
+        $expects['query'] = 'SELECT `articles`.`id`, `articles`.`title`, `users`.`username` FROM `articles` LEFT JOIN `users` ON `articles`.`author` = `users`.`id`';
+        $expects['binds'] = [];
+        $query            = $this->db->get(['articles.id', 'articles.title', 'users.username'])
+                                     ->leftJoin('users')
+                                     ->on('articles.author', '=', 'users.id')
+                                     ->exec();
+
+        $this->assertEquals($expects['query'], $query->debug()['query']);
+        $this->assertEquals($expects['binds'], $query->debug()['binds']);
+    }
+    
+    public function testRightJoinMethod() {
+        $expects['query'] = 'SELECT `articles`.`id`, `articles`.`title`, `users`.`username` FROM `articles` RIGHT JOIN `users` ON `articles`.`author` = `users`.`id`';
+        $expects['binds'] = [];
+        $query            = $this->db->get(['articles.id', 'articles.title', 'users.username'])
+                                     ->rightJoin('users')
+                                     ->on('articles.author', '=', 'users.id')
+                                     ->exec();
+
+        $this->assertEquals($expects['query'], $query->debug()['query']);
+        $this->assertEquals($expects['binds'], $query->debug()['binds']);
+    }
+    
 }

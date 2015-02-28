@@ -140,10 +140,8 @@ namespace Trestle {
             foreach($this->pattern as $bit) {
                 if(substr($bit, 0, 1) == '~') {
                     if(isset($this->_structure[substr($bit, 1)])) {
-                        
                         $query .= $this->_structure[substr($bit, 1)];
                         $query .= (count($this->_structure) > $i ? ' ' : '');
-                        
                         $this->_addBind(substr($bit, 1));
                     }
                     $i++;
@@ -152,7 +150,6 @@ namespace Trestle {
                     $query .= (count($this->_structure) > $i ? ' ' : '');
                     $i--;
                 }
-                
             }
             return rtrim($query);
         }

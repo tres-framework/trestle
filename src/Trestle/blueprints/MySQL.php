@@ -181,26 +181,153 @@ namespace Trestle\blueprints {
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
-        public function join($field, $operator, $value) {
+        public function join($table, $type = 'JOIN') {
+            if(!in_array(explode("::", end($this->_backtrace))[1], ['innerJoin', 'leftJoin', 'rightJoin'])) {
+                $this->_backtrace[] = __METHOD__;
+            }
+            
+            $type = strtoupper($type);
+            
+            if(!in_array($type, ['JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'FULL OUTER JOIN'])) {
+                throw new QueryException('Please use a valid JOIN type.');
+            }
+            
+            $this->_removeTablesFromGlobalTables($table);
+            
+            $this->_structure['table'] = $this->_stringWrapper($this->_getGlobalTables());
+            $this->_structure['join'] = $type . " " . $this->_stringWrapper($table);
+            
+            return $this;
+        }
+        
+        /**
+         * Create an INNER JOIN
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function innerJoin($table) {
             $this->_backtrace[] = __METHOD__;
             
-            if(!$this->_checkForTablesAndColumns($field)) {
-                throw new QueryException('Unable to determine table to join!');
-            } else {
-                $fieldTables = $this->_parseTables($field);
-                $valueTables = $this->_parseTables($value);
-                
-                $this->_addTablesToGlobalTables($fieldTables);
-                $this->_removeTablesFromGlobalTables($valueTables);
-                
-                $this->_structure['table'] = $this->_stringWrapper($this->_getGlobalTables());
-                $this->_structure['join'] = "JOIN " . $this->_stringWrapper($valueTables);
-                
-                $this->_structure['on'] = "ON " . 
-                    $this->_stringWrapper($field) . ' ' . 
-                    $operator . ' ' .
-                    $this->_stringWrapper($value);
+            $this->join($table, 'INNER JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Create an LEFT JOIN
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function leftJoin($table) {
+            $this->_backtrace[] = __METHOD__;
+            
+            $this->join($table, 'LEFT JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Create an RIGHT JOIN
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function rightJoin($table) {
+            $this->_backtrace[] = __METHOD__;
+            
+            $this->join($table, 'RIGHT JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Create an FULL OUTER JOIN
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function fullOuterJoin($table) {
+            $this->_backtrace[] = __METHOD__;
+            
+            $this->join($table, 'FULL OUTER JOIN');
+            var_dump($this->_structure);
+            return $this;
+        }
+        
+        /**
+         * Joins table column A to column B
+         *
+         * @param  string       $field    The field to effect.
+         * @param  string       $operator The operator to use:
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
+         *                                LIKE
+         * @param  array|string $value    The value(s) to pass.
+         * @return object $this
+         */
+        public function on($field, $operator, $value, $prefix = false) {
+            if(!in_array(explode("::", end($this->_backtrace))[1], ['andOn', 'orOn'])) {
+                $this->_backtrace[] = __METHOD__;
             }
+            
+            $operator = strtoupper($operator); 
+
+            if(!in_array($operator, ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE'])) {
+                throw new QueryException('Please use a valid operator.');
+            }
+            
+            if(isset($this->_structure['on'])) {
+                if(!$prefix) {
+                    $prefix = 'AND';
+                }
+                $onString = $this->_structure['on'] . " {$prefix} ";
+            } else {
+                $onString = "ON ";
+            }
+            
+            $onString .= 
+                $this->_stringWrapper($field) . ' ' . 
+                $operator . ' ' .
+                $this->_stringWrapper($value);
+                
+            $this->_structure['on'] = $onString;
+            
+            return $this;
+        }
+        
+        /**
+         * Joins an additional table column A to column B
+         *
+         * @param  string       $field    The field to effect.
+         * @param  string       $operator The operator to use:
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
+         *                                LIKE
+         * @param  array|string $value    The value(s) to pass.
+         * @return object $this
+         */
+        public function andOn($field, $operator, $value) {
+            $this->_backtrace[] = __METHOD__;
+            
+            $this->on($field, $operator, $value, 'AND');
+            
+            return $this;
+        }
+        
+        /**
+         * Joins an additional table column A to column B
+         *
+         * @param  string       $field    The field to effect.
+         * @param  string       $operator The operator to use:
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
+         *                                LIKE
+         * @param  array|string $value    The value(s) to pass.
+         * @return object $this
+         */
+        public function orOn($field, $operator, $value) {
+            $this->_backtrace[] = __METHOD__;
+            
+            $this->on($field, $operator, $value, 'OR');
             
             return $this;
         }
