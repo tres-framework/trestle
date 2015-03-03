@@ -449,7 +449,7 @@ namespace Trestle\blueprints {
             $this->_backtrace[] = __METHOD__;
 
             if(empty($this->_structure['where'])) {
-                throw new QueryException('You can not call the andWhere() method before calling the where() method.');
+                throw new QueryException('You can not call the orWhere() method before calling the where() method.');
             }
             $this->where($field, $operator, $value, $rawBind, 'OR');
 
