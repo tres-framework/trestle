@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
 
 INSERT INTO `categories` (`id`, `name`) VALUES
 (1, 'News'),
-(2, 'Seciurity'),
+(2, 'Security'),
 (3, 'Release'),
 (4, 'Patch');
 
