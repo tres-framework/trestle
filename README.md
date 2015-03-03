@@ -147,7 +147,7 @@ echo '<pre>'; print_r($users->result()); echo '</pre>';
 // Get a record with specific fields
 // Return all results
 // SELECT username, firstname, email FROM `users` WHERE `id` = ?
-$users = $db->get('users', ['username', 'firstname', 'email'])
+$users = $db->read('users', ['username', 'firstname', 'email'])
             ->where('id', '=', 1)
             ->exec();
 echo '<pre>'; print_r($users->result()); echo '</pre>';
@@ -158,7 +158,7 @@ echo '<pre>'; print_r($users->result()); echo '</pre>';
 // Get records with all existing fields
 // Return all data
 // SELECT * FROM `users` ORDER BY ? ASC LIMIT ?, ?
-$users = $db->get('users')
+$users = $db->read('users')
             ->order('id', 'ASC')
             ->offset(0)
             ->limit(5)
@@ -172,7 +172,7 @@ echo '<pre>'; print_r($users->count()); echo '</pre>';
 // Get records with all existing fields
 // Return all data
 // SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
-$users = $db->get('users')
+$users = $db->read('users')
 			->where('id', 'BETWEEN', [1, 9])
 			->exec();
 echo '<pre>'; print_r($users->results()); echo '</pre>';
@@ -183,7 +183,7 @@ echo '<pre>'; print_r($users->results()); echo '</pre>';
 // Get records with all existing fields
 // Return all data
 // SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
-$users = $db->get('users')
+$users = $db->read('users')
 			->where('id', 'NOT BETWEEN', [1, 9])
 			->exec();
 echo '<pre>'; print_r($users->results()); echo '</pre>';
@@ -194,7 +194,7 @@ echo '<pre>'; print_r($users->results()); echo '</pre>';
 // Get records with all existing fields
 // Return all data
 // SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
-$posts = $db->get('posts')
+$posts = $db->read('posts')
             ->where('title', 'LIKE', 'foobar')
             ->exec();
 echo '<pre>'; print_r($posts->results()); echo '</pre>';
@@ -205,7 +205,7 @@ echo '<pre>'; print_r($posts->results()); echo '</pre>';
 // A ton of parameters
 // Return data as object
 // SELECT id, title FROM `posts` WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC LIMIT ?, ?
-$posts = $db->get('posts', ['id', 'title'])
+$posts = $db->read('posts', ['id', 'title'])
             ->where('date', '>', '2014-11-20')
             ->andWhere('id', 'BETWEEN', [1, 9])
             ->andWhere('author', 'LIKE', 1)

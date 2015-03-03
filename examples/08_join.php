@@ -22,14 +22,14 @@ Trestle\Config::set([
 $db = new Trestle\Database('connection_name_1');
 
 // Using multiple tables in get()
-$users = $db->get(['posts', 'users'], ['posts.id', 'posts.title', 'users.username'])
+$users = $db->read(['posts', 'users'], ['posts.id', 'posts.title', 'users.username'])
             ->where('posts.author', '=', 'users.id', true)
             ->exec();
 
 echo '<pre>'; print_r($users->results()); echo '</pre>';
 
 // Using join() & on()
-$users = $db->get('posts', ['posts.id', 'posts.title'])
+$users = $db->read('posts', ['posts.id', 'posts.title'])
             ->join('users', ['users.username'])
             ->on('posts.author', '=', 'users.id')
             ->exec();

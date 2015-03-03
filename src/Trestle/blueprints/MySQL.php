@@ -61,7 +61,7 @@ namespace Trestle\blueprints {
          * @param  array|string $columns The fields to return.
          * @return object       $this
          */
-        public function get($table, $columns = null) {
+        public function read($table, $columns = null) {
             $this->_backtrace[] = __METHOD__;
             
             $this->_setStructure([
