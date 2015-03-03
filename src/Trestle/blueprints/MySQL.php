@@ -27,6 +27,13 @@ namespace Trestle\blueprints {
         protected $_varWrapper = '`';
         
         /**
+         * Set MySQL specific global flags.
+         *
+         * @var boolean
+         */
+        protected $_global = ['false' => false];
+        
+        /**
          * Loads in the database.
          *
          * @param  \Trestle\Process $db The Database instance for the query.
@@ -195,7 +202,9 @@ namespace Trestle\blueprints {
             $this->_removeTablesFromGlobalTables($table);
             
             $this->_structure['table'] = $this->_stringWrapper($this->_getGlobalTables());
-            $this->_structure['join'] = $type . " " . $this->_stringWrapper($table);
+            $this->_structure['join'][] = $type . " " . $this->_stringWrapper($table);
+            
+            $this->_global['on'] = false;
             
             return $this;
         }
@@ -264,9 +273,11 @@ namespace Trestle\blueprints {
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
          * @param  array|string $value    The value(s) to pass.
+         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  string       $prefix   If we need to pass a prefix like AND/OR.
          * @return object $this
          */
-        public function on($field, $operator, $value, $prefix = false) {
+        public function on($field, $operator, $value, $rawBind = false, $prefix = null) {
             if(!in_array(explode("::", end($this->_backtrace))[1], ['andOn', 'orOn'])) {
                 $this->_backtrace[] = __METHOD__;
             }
@@ -277,21 +288,21 @@ namespace Trestle\blueprints {
                 throw new QueryException('Please use a valid operator.');
             }
             
-            if(isset($this->_structure['on'])) {
-                if(!$prefix) {
-                    $prefix = 'AND';
+            if($this->_global['on'] === true) {
+                if($prefix == null) {
+                    $this->_structure['join'][] = 'AND';
+                } elseif($prefix != null) {
+                    $this->_structure['join'][] = $prefix;
                 }
-                $onString = $this->_structure['on'] . " {$prefix} ";
             } else {
-                $onString = "ON ";
+                $this->_global['on'] = true;
+                $this->_structure['join'][] = "ON";
             }
             
-            $onString .= 
+            $this->_structure['join'][] = 
                 $this->_stringWrapper($field) . ' ' . 
                 $operator . ' ' .
-                $this->_stringWrapper($value);
-                
-            $this->_structure['on'] = $onString;
+                ($rawBind === true ? $value : $this->_stringWrapper($value));
             
             return $this;
         }
@@ -303,13 +314,14 @@ namespace Trestle\blueprints {
          * @param  string       $operator The operator to use:
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
+         * @param  boolean      $rawBind  Bind the values immediately
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
-        public function andOn($field, $operator, $value) {
+        public function andOn($field, $operator, $value, $rawBind = false) {
             $this->_backtrace[] = __METHOD__;
             
-            $this->on($field, $operator, $value, 'AND');
+            $this->on($field, $operator, $value, $rawBind, 'AND');
             
             return $this;
         }
@@ -321,13 +333,14 @@ namespace Trestle\blueprints {
          * @param  string       $operator The operator to use:
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
+         * @param  boolean      $rawBind  Bind the values immediately
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
-        public function orOn($field, $operator, $value) {
+        public function orOn($field, $operator, $value, $rawBind = false) {
             $this->_backtrace[] = __METHOD__;
             
-            $this->on($field, $operator, $value, 'OR');
+            $this->on($field, $operator, $value, $rawBind, 'OR');
             
             return $this;
         }

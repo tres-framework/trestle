@@ -135,25 +135,42 @@ namespace Trestle {
             if(!isset($this->pattern)) {
                 throw new QueryException('Can\'t build query, no query structure set in master method!');
             }
-            $i = 0;
             $query = '';
             foreach($this->pattern as $bit) {
+                $patternBit = substr($bit, 1);
                 if(substr($bit, 0, 1) == '~') {
-                    if(isset($this->_structure[substr($bit, 1)])) {
-                        $query .= $this->_structure[substr($bit, 1)];
-                        $query .= (count($this->_structure) > $i ? ' ' : '');
-                        $this->_addBind(substr($bit, 1));
+                    if(isset($this->_structure[$patternBit])) {
+                        $structureBit = $this->_structure[$patternBit];
+                        if(is_array($structureBit)) {
+                            $structureBit = $this->_buildSubQuery($structureBit);
+                        }
+                        $query .= $structureBit . ' ';
+                        $this->_addBind($patternBit);
                     }
-                    $i++;
                 } else {
-                    $query .= $bit;
-                    $query .= (count($this->_structure) > $i ? ' ' : '');
-                    $i--;
+                    $query .= $bit . ' ';
                 }
             }
             return rtrim($query);
         }
 
+        /**
+         * Builds part of the query from an array
+         * 
+         * @param  array  $queryArray The query to parse in an array
+         * @return string A part of the whole query
+         */
+        private function _buildSubQuery($queryArray) {
+            $query = '';
+            foreach($queryArray as $bit) {
+                if(is_array($bit)) {
+                    $query .= $this->_buildSubQuery($bit);
+                }
+                $query .= $bit . ' ';
+            }
+            return rtrim($query);
+        }
+        
         /**
          * Adds a bind to the bindings var to be used later in the query.
          * Also checks for valid binds, filters out blanks and merges the
