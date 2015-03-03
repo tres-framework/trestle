@@ -210,13 +210,27 @@ namespace Trestle {
         }
 
         /**
+         * Builds a list of value(s) Is not exclusive to arrays.
+         *
+         * @param  array|string $values The value(s) to generat.
+         * @return string       The wrapped content.
+         */
+        protected function _generateList($values) {
+            if(is_array($values)) {
+                return implode(', ', $values);
+            } else {
+                return $values;
+            }
+        }
+        
+        /**
          * Builds a list of value(s) wrapped in the $varWrapper. Is not exclusive
          * to arrays.
          *
          * @param  array|string $values The value(s) to wrap.
          * @return string       The wrapped content.
          */
-        protected function _stringWrapper($values) {
+        protected function _generateWrapList($values) {
             foreach((array)$values as $string) {
                 if($table = strstr($string, '.', true)) {
                     $pos = strpos($string, '.');
@@ -257,23 +271,22 @@ namespace Trestle {
          * ex. `username` = ?, `email` = ?
          *
          * @param  array|string $values     The value(s) to wrap & set.
-         * @param  string       $varWrapper The string to wrap around values.
          * @return string       The wrapped content.
          */
-        protected function _generateSetList($values, $varWrapper = '') {
+        protected function _generateSetList($values) {
             if(is_array($values)) {
                 $count = count($values);
                 $data  = '';
                 $i     = 1;
                 foreach($values as $key => $value) {
-                    $data .= $this->_stringWrapper($key) . ' = ?';
+                    $data .= $this->_generateWrapList($key) . ' = ?';
                     if($i < $count) {
                         $data .= ', ';
                     }
                     $i++;
                 }
             } else {
-                $data = $this->_stringWrapper($key) . ' = ?';
+                $data = $this->_generateWrapList($key) . ' = ?';
             }
             return $data;
         }

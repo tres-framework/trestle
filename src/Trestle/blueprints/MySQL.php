@@ -92,10 +92,10 @@ namespace Trestle\blueprints {
             
             $this->_addTablesToGlobalTables($table);
             
-            $this->_structure['table'] = $this->_stringWrapper($table);
+            $this->_structure['table'] = $this->_generateWrapList($table);
             
             if(!empty($columns)){
-                $this->_structure['columns'] = $this->_stringWrapper($columns);
+                $this->_structure['columns'] = $this->_generateWrapList($columns);
             } else {
                 $this->_structure['columns'] = '*';
             }
@@ -119,9 +119,9 @@ namespace Trestle\blueprints {
                 "~set",
                 "~where",
             ]);
-            $this->_structure['table'] = $this->_stringWrapper($table);
+            $this->_structure['table'] = $this->_generateWrapList($table);
 
-            $keys   = $this->_stringWrapper(array_keys($sets));
+            $keys   = $this->_generateWrapList(array_keys($sets));
             $values = $this->_generateBindList(count(array_values($sets)));
 
             $this->_structure['set'] = '(' . $keys . ') VALUES (' . $values . ')';
@@ -152,7 +152,7 @@ namespace Trestle\blueprints {
                 throw new QueryException('The update method requires the second parameter to be set as an array.');
             }
 
-            $this->_structure['table'] = $this->_stringWrapper($table);
+            $this->_structure['table'] = $this->_generateWrapList($table);
             $this->_structure['set']   = $this->_generateSetList($sets);
             $this->_bind['set']        = array_values($sets);
 
@@ -174,7 +174,7 @@ namespace Trestle\blueprints {
                 "~where",
             ]);
 
-            $this->_structure['table'] = $this->_stringWrapper($table);
+            $this->_structure['table'] = $this->_generateWrapList($table);
             return $this;
         }
 
@@ -201,8 +201,8 @@ namespace Trestle\blueprints {
             
             $this->_removeTablesFromGlobalTables($table);
             
-            $this->_structure['table'] = $this->_stringWrapper($this->_getGlobalTables());
-            $this->_structure['join'][] = $type . " " . $this->_stringWrapper($table);
+            $this->_structure['table'] = $this->_generateWrapList($this->_getGlobalTables());
+            $this->_structure['join'][] = $type . " " . $this->_generateWrapList($table);
             
             $this->_global['on'] = false;
             
@@ -300,9 +300,9 @@ namespace Trestle\blueprints {
             }
             
             $this->_structure['join'][] = 
-                $this->_stringWrapper($field) . ' ' . 
+                $this->_generateWrapList($field) . ' ' . 
                 $operator . ' ' .
-                ($rawBind === true ? $value : $this->_stringWrapper($value));
+                ($rawBind === true ? $value : $this->_generateWrapList($value));
             
             return $this;
         }
@@ -386,9 +386,9 @@ namespace Trestle\blueprints {
             
             if($rawBind === true) {
                 if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
-                    $binds = "{$this->_stringWrapper($value[0])} AND {$this->_stringWrapper($value[1])}";
+                    $binds = "{$this->_generateWrapList($value[0])} AND {$this->_generateWrapList($value[1])}";
                 } else {
-                    $binds = $this->_stringWrapper($value);
+                    $binds = $this->_generateWrapList($value);
                 }
             } else {
                 if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
@@ -398,11 +398,7 @@ namespace Trestle\blueprints {
                 }
             }
             
-            if($rawBind === true) {
-                $field = $this->_stringWrapper($field);
-            } else {
-                $field = $this->_stringWrapper($field);
-            }
+            $field = $this->_generateWrapList($field);
             $this->_structure['where'] = (isset($prefix) && !empty($prefix) ? $this->_structure['where'] . ' ' . $prefix . ' ' : 'WHERE ') . "{$field} {$operator} " . $binds;
             
             if($rawBind === false) {
@@ -470,7 +466,7 @@ namespace Trestle\blueprints {
         public function order($fields, $order = 'ASC'){
             $this->_backtrace[] = __METHOD__;
             $this->_structure['order'] = "ORDER BY ";
-            $this->_structure['order'] .= $this->_stringWrapper($fields, $this->_varWrapper) . ' ';
+            $this->_structure['order'] .= $this->_generateWrapList($fields) . ' ';
             if(in_array($order, ['ASC', 'DESC'])) {
                 $this->_structure['order'] .= $order;
             } else {
