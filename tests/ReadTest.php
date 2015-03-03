@@ -106,7 +106,7 @@ class ReadTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testReadLimitAndOffset() {
-        $expects['query'] = 'SELECT * FROM `articles` LIMIT ?,?';
+        $expects['query'] = 'SELECT * FROM `articles` LIMIT ?, ?';
         $expects['binds'] = [1 => 5, 2 => 3];
         $query            = $this->db->read('articles')
                                      ->limit(3)
