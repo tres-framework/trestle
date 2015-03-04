@@ -261,7 +261,7 @@ namespace Trestle\blueprints {
             $this->_backtrace[] = __METHOD__;
             
             $this->join($table, 'FULL OUTER JOIN');
-            var_dump($this->_structure);
+            
             return $this;
         }
         
@@ -475,12 +475,12 @@ namespace Trestle\blueprints {
          */
         public function order($fields, $order = 'ASC'){
             $this->_backtrace[] = __METHOD__;
-            $this->_structure['order'] = "ORDER BY ";
-            $this->_structure['order'] .= $this->_generateWrapList($fields) . ' ';
+            $this->_structure['order'][] = "ORDER BY";
+            $this->_structure['order'][] = $this->_generateWrapList($fields);
             if(in_array($order, ['ASC', 'DESC'])) {
-                $this->_structure['order'] .= $order;
+                $this->_structure['order'][] = $order;
             } else {
-                $this->_structure['order'] .= 'ASC';
+                $this->_structure['order'][] = 'ASC';
             }
             return $this;
         }
