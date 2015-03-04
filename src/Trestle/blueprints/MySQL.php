@@ -398,9 +398,19 @@ namespace Trestle\blueprints {
                 }
             }
             
-            $field = $this->_generateWrapList($field);
-            $this->_structure['where'] = (isset($prefix) && !empty($prefix) ? $this->_structure['where'] . ' ' . $prefix . ' ' : 'WHERE ') . "{$field} {$operator} " . $binds;
+            if(!isset($this->_structure['where'])) {
+                $this->_structure['where'][] = 'WHERE';
+            }
+            if(isset($prefix)) {
+                $this->_structure['where'][] = $prefix;
+            }
+            $this->_structure['where'][] = $this->_generateWrapList($field);
+            $this->_structure['where'][] = $operator;
+            $this->_structure['where'][] = $binds;
             
+            if(!isset($this->_bind['where'])) {
+                $this->_bind['where'] = [];
+            }
             if($rawBind === false) {
                 if(is_array($value)) {
                     $this->_bind['where'] = array_merge($this->_bind['where'], $value);
