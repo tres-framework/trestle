@@ -210,9 +210,9 @@ namespace Trestle {
         }
 
         /**
-         * Builds a list of value(s) Is not exclusive to arrays.
+         * Builds a list of value(s) into a string.
          *
-         * @param  array|string $values The value(s) to generat.
+         * @param  array|string $values The value(s) to generate.
          * @return string       The wrapped content.
          */
         protected function _generateList($values) {
