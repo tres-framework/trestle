@@ -11,7 +11,7 @@ This is an independent database package that is being worked on for the [Tres Fr
 - PHP 5.4 +
 
 ## Supported DB Types
-- MySql
+- MySQL
 
 ## Supported DB Features
 ### MySql
@@ -29,182 +29,133 @@ This is an independent database package that is being worked on for the [Tres Fr
 - ORDER BY
 - GROUP BY
 - LIMIT (limit, offset)
-- JOINS
-
-#### TO-DO
-- LEFT JOINS
-- RIGHT JOINS
-- UNIONS
-
-## Logs
-Trestle automatically creates logs for query request which can help identify slow queries and possible abuse from users. Query failures and database failures are also logged, they show deeper information about an error like codes and examples. All logs are stored chronologically in their respect directory.
-
-Example:
-```
-/src/Trestle/logs/
-- database/
-- - 2014-12-28.000.log
-- query/
-- - 2014-12-30.000.log
-- request/
-- - 2014-12-28.000.log
-- - 2014-12-29.000.log
-- - 2014-12-30.000.log
-```
+- JOIN
+    - INNER JOIN
+    - LEFT JOIN
+    - RIGHT JOIN
 
 ## Examples
-### Start Trestle
+### Basic Usage
 ```php
-// Autoload
-spl_autoload_register(function($class){
-    $dirs = [
-        dirname(dirname(__DIR__)).'/src/'
-    ];
+// Include your custom autoload
+require_once('includes/autoload.php');
 
-    foreach($dirs as $dir){
-        $file = str_replace('\\', '/', rtrim($dir, '/').'/'.$class.'.php');
-
-        if(is_readable($file)){
-            require_once($file);
-            break;
-        }
-    }
-});
-
-$dbInfo = [
-    'display_errors' => [
-        'query' => false,
-    ],
-
-    'default' => 'MySQL1',
-
-    'connections' => [
-        'MySQL1' => [
-            'driver'    => 'MySQL',
-            'database'  => 'trestle_1',
-            'host'      => '127.0.0.1',
-            'port'      => '3306',
-            'charset'   => 'utf8',
-            'username'  => 'root',
-            'password'  => ''
-        ],
-
-        'MySQL2' => [
-            'driver'    => 'MySQL',
-            'database'  => 'trestle_2',
-            'host'      => '127.0.0.1',
-            'port'      => '3306',
-            'charset'   => 'utf8',
-            'username'  => 'root',
-            'password'  => ''
-        ]
-    ],
-    
-    // Log settings are optional and will use most of the below by default
-    // 'logs' => [
-    //     'dir' => [
-    //         'path'        => __DIR__ . '/logs',
-    //         'permissions' => 0777,
-    //     ],
-    //     'file' => [
-    //         'ext'         => 'log',
-    //         'size'        => 2097152,
-    //         'permissions' => 0775,
-    //     ],
-    // ],
-
-];
-
+// Catch any exceptions
 set_exception_handler(function($e) {
     echo '<b>' . get_class($e) . ':</b> ' . $e->getMessage();
 });
 
-// Set Config
-Trestle\Config::set($dbInfo);
+// Load configs directly into method
+Trestle\Config::set([
+    'throw' => [
+        'database' => true,
+        'query'    => true,
+    ],
+    
+    'default' => 'connecton_name_1',
+    
+    'connections' => [
+        'connection_name_1' => [
+            'driver'    => 'MySQL',
+            'database'  => 'database_name',
+            'host'      => '127.0.0.1',
+            'port'      => '3306',
+            'charset'   => 'utf8',
+            'username'  => 'root',
+            'password'  => 'password'
+        ],
+        'connection_name_2' => [
+            'driver'    => 'MySQL',
+            'database'  => 'database_name_2',
+            'host'      => '127.0.0.1',
+            'port'      => '3306',
+            'charset'   => 'utf8',
+            'username'  => 'root',
+            'password'  => 'password'
+        ],
+    ],
+    
+    'logs' => [
+        'dir' => [
+            'path'        => __DIR__.'/logs',
+            'permissions' => '775',
+        ],
+        
+        'file' => [
+            'ext'         => 'log',
+            'size'        => '100',
+            'permissions' => '775',
+        ],
+    ],
+]);
 
-// Load Database 1
-$db = new Trestle\Database('MySQL1');
+// Select database connection
+$db = new Trestle\Database('connection_name_1');
 
-// Load another database
-$db2 = new Trestle\Database('MySQL2');
+// Run a query
+$query = $db->query(...)
+            ->exec();
 
-// Build queries...
-// Look below for examples
+// Return results
+echo '<pre>'; print_r($query->result()); echo '</pre>';
+
+// Count results
+echo '<pre>'; print_r($query->count()); echo '</pre>';
+
+// Debug results
+echo '<pre>'; print_r($query->debug()); echo '</pre>';
+
+// Return true/false query success
+echo '<pre>'; print_r($query->status()); echo '</pre>';
 ```
 
 ### Raw Query
 ```php
-// Get a record with specific fields
-// Return first result
 // SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
-$users = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', 1)
+$query = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])
             ->exec();
-echo '<pre>'; print_r($users->result()); echo '</pre>';
 ```
 
-### Get (first or only row)
+### read
 ```php
-// Get a record with specific fields
-// Return all results
-// SELECT username, firstname, email FROM `users` WHERE `id` = ?
-$users = $db->read('users', ['username', 'firstname', 'email'])
+// SELECT `username`, `firstname`, `email` FROM `users`
+$query = $db->read('users', ['username', 'firstname', 'email'])
+            ->exec();
+
+
+// SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
+$query = $db->read('users', ['username', 'firstname', 'email'])
             ->where('id', '=', 1)
             ->exec();
-echo '<pre>'; print_r($users->result()); echo '</pre>';
-```
 
-### Get (all rows + count rows)
-```php
-// Get records with all existing fields
-// Return all data
+            
 // SELECT * FROM `users` ORDER BY ? ASC LIMIT ?, ?
-$users = $db->read('users')
+$query = $db->read('users')
             ->order('id', 'ASC')
             ->offset(0)
             ->limit(5)
             ->exec();
-echo '<pre>'; print_r($users->results()); echo '</pre>';
-echo '<pre>'; print_r($users->count()); echo '</pre>';
-```
 
-### Get (BETWEEN)
-```php
-// Get records with all existing fields
-// Return all data
+            
 // SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
-$users = $db->read('users')
+$query = $db->read('users')
 			->where('id', 'BETWEEN', [1, 9])
 			->exec();
-echo '<pre>'; print_r($users->results()); echo '</pre>';
-```
 
-### Get (NOT BETWEEN)
-```php
-// Get records with all existing fields
-// Return all data
-// SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
-$users = $db->read('users')
+            
+// SELECT * FROM `users` WHERE `id` NOT BETWEEN ? AND ?
+$query = $db->read('users')
 			->where('id', 'NOT BETWEEN', [1, 9])
 			->exec();
-echo '<pre>'; print_r($users->results()); echo '</pre>';
-```
 
-### Get (LIKE)
-```php
-// Get records with all existing fields
-// Return all data
-// SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
+
+// SELECT * FROM `users` WHERE `id` LIKE ?
 $posts = $db->read('posts')
             ->where('title', 'LIKE', 'foobar')
             ->exec();
-echo '<pre>'; print_r($posts->results()); echo '</pre>';
-```
 
-### GET (The Kitchen Sink)
-```php
-// A ton of parameters
-// Return data as object
-// SELECT id, title FROM `posts` WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC LIMIT ?, ?
+            
+// SELECT `id`, `title` FROM `posts` WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC LIMIT ?, ?
 $posts = $db->read('posts', ['id', 'title'])
             ->where('date', '>', '2014-11-20')
             ->andWhere('id', 'BETWEEN', [1, 9])
@@ -213,18 +164,12 @@ $posts = $db->read('posts', ['id', 'title'])
             ->limit(4)
             ->offset(1)
             ->exec();
-echo '<pre>SELECT `id`, `title` FROM posts WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC  LIMIT ?, ?</pre>';
-echo '<pre>'; print_r($posts->results()); echo '</pre>';
-echo 'Debug:';
-echo '<pre>'; print_r($posts->debug()); echo '</pre>';
 ```
 
 ### Update
 ```php
-// Update row
-// Return true/false of update
 // UPDATE `users` SET `username` = ?, `email` = ?, `firstname` = ? WHERE `id` = ?
-$update = $db->update('users', [
+$query = $db->update('users', [
                 'username'  => 'bar',
                 'email'     => 'bar@foo.tld',
                 'firstname' => 'bar',
@@ -232,39 +177,94 @@ $update = $db->update('users', [
             ])
             ->where('id', '=', 3)
             ->exec();
-echo '<pre>'; print_r($update->status()); echo '</pre>';
 ```
 
 ### Create
 ```php
-// Create a record
-// Return true/false of create
 // INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?);
-$register = $db->create('users', [
-                    'username' => 'foobar',
-                    'email' => 'foo@bar.tld',
-                    'password' => 'cleartextwoot',
-                    'firstname' => 'Foo',
-                    'lastname' => 'Bar',
-                    'active' => 0,
-                    'permissions' => '{\'admin\': 0}'
-                ])
-                ->exec();
-echo '<pre>'; print_r($register->status()); echo '</pre>';
+$query = $db->create('users', [
+                'username' => 'foobar',
+                'email' => 'foo@bar.tld',
+                'password' => 'cleartextwoot',
+                'firstname' => 'Foo',
+                'lastname' => 'Bar',
+                'active' => 0,
+                'permissions' => '{\'admin\': 0}'
+            ])
+            ->exec();
 ```
 
 ### Delete
 ```php
-// Delete
-// Return true/false of delete
 // DELETE FROM `users` WHERE `id` = ?
 $delete = $db->delete('users')
              ->where('id', '=', 72)
              ->exec();
-echo '<pre>'; print_r($delete->status()); echo '</pre>';
 ```
 
-## Using the data
+### JOINS
+```php
+// The following queryes return the same results
+// SELECT `users`.`id`, `users`.`username`, `articles`.`id`, `articles`.`title` FROM `users`, `articles`
+$query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
+            ->exec();
+
+$query = $db->read(['users', 'articles'], ['users.id', 'users.username', 'articles.id', 'articles.title'])
+            ->exec();
+```
+
+#### JOIN ON
+```php
+$query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
+            ->join('users')
+            ->on('articles.author', '=', 'users.id')
+            ->exec();
+```
+Returns
+```sql
+SELECT 
+    `users`.`id`, 
+    `users`.`username`, 
+    `articles`.`id`, 
+    `articles`.`title` 
+FROM 
+    `articles` 
+JOIN 
+    `users` 
+ON 
+    `articles`.`author` = `users`.`id`
+```
+
+#### MULTI JOIN ON
+```php
+$query = $db->read(['articles.id', 'articles.title', 'users.username', 'categories.name'])
+            ->leftJoin('users')
+            ->on('articles.author', '=', 'users.id')
+            ->leftJoin('categories')
+            ->on('articles.category', '=', 'categories.id')
+            ->order('articles.id')
+            ->exec();
+```
+Returns
+```sql
+SELECT 
+    `articles`.`id`, 
+    `articles`.`title`, 
+    `users`.`username`, 
+    `categories`.`name` 
+FROM 
+    `articles` 
+LEFT JOIN 
+    `users` 
+ON 
+    `articles`.`author` = `users`.`id` 
+LEFT JOIN 
+    `categories` 
+ON 
+    `articles`.`category` = `categories`.`id`
+```
+
+## Using the retuned data
 ```php
 $foobar = $db->query('...')
              ->exec();
@@ -284,4 +284,20 @@ $foobar = $db->query('...')
              ->exec();
 // Full debug
 $foobar->debug();
+```
+
+## Logs
+Trestle automatically creates logs for query request which can help identify slow queries and possible abuse from users. Query failures and database failures are also logged, they show deeper information about an error like codes and examples. All logs are stored chronologically in their respect directory.
+
+Example:
+```
+/src/Trestle/logs/
+- database/
+- - 2014-12-28.000.log
+- query/
+- - 2014-12-30.000.log
+- request/
+- - 2014-12-28.000.log
+- - 2014-12-29.000.log
+- - 2014-12-30.000.log
 ```
