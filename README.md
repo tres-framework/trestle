@@ -204,7 +204,7 @@ $delete = $db->delete('users')
 
 ### JOINS
 ```php
-// The following queryes return the same results
+// The following queries return the same results
 // SELECT `users`.`id`, `users`.`username`, `articles`.`id`, `articles`.`title` FROM `users`, `articles`
 $query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
             ->exec();
