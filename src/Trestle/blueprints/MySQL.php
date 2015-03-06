@@ -31,7 +31,7 @@ namespace Trestle\blueprints {
          *
          * @var boolean
          */
-        protected $_global = ['false' => false];
+        protected $_global = ['raw' => false];
         
         /**
          * Loads in the database.
@@ -56,49 +56,50 @@ namespace Trestle\blueprints {
                 "~query",
             ]);
             
-            $this->_structure['query'] = $query;
-            $this->_bind['query']      = $binds;
+            $this->_setStructureContents('query', ['query'], $query);
+            $this->_bind['query'] = $binds;
+            
             return $this;
         }
 
         /**
          * Prepares to read from the database.
          *
-         * @param  string       $table   The table to search.
-         * @param  array|string $columns The fields to return.
+         * @param  string       $table  The table to search.
+         * @param  array|string $column The fields to return.
          * @return object       $this
          */
-        public function read($table, $columns = null) {
+        public function read($table, $column = null) {
             $this->_backtrace[] = __METHOD__;
             
             $this->_setStructure([
-                "SELECT",
-                "~columns",
-                "FROM",
+                "~column",
                 "~table",
                 "~join",
                 "~on",
                 "~where",
                 "~order",
                 "~group",
-                "~offset",
                 "~limit",
             ]);
             
             if($this->_checkForTablesAndColumns($table)) {
-                $columns = $table;
-                $table   = $this->_parseTables($table);
+                $column = $table;
+                $table  = $this->_parseTables($table);
             }
             
             $this->_addTablesToGlobalTables($table);
             
-            $this->_structure['table'] = $this->_generateWrapList($table);
+            $this->_setStructureContents('column', ['command'], 'SELECT');
             
-            if(!empty($columns)){
-                $this->_structure['columns'] = $this->_generateWrapList($columns);
+            if(!empty($column)){
+                $this->_setStructureContents('column', ['column', 'comma'], $column);
             } else {
-                $this->_structure['columns'] = '*';
+                $this->_setStructureContents('column', [], '*');
             }
+            
+            $this->_setStructureContents('table', ['command'], 'FROM');
+            $this->_setStructureContents('table', ['column', 'comma'], $table);
             
             return $this;
         }
@@ -114,19 +115,18 @@ namespace Trestle\blueprints {
             $this->_backtrace[] = __METHOD__;
 
             $this->_setStructure([
-                "INSERT INTO",
                 "~table",
                 "~set",
                 "~where",
             ]);
-            $this->_structure['table'] = $this->_generateWrapList($table);
-
-            $keys   = $this->_generateWrapList(array_keys($sets));
-            $values = $this->_generateBindList(count(array_values($sets)));
-
-            $this->_structure['set'] = '(' . $keys . ') VALUES (' . $values . ')';
-            $this->_bind['set']      = array_values($sets);
-
+            
+            $this->_setStructureContents('table', ['command'], 'INSERT INTO');
+            $this->_setStructureContents('table', ['column', 'comma'], $table);
+            
+            $this->_setStructureContents('set', ['column', 'comma', 'parentheses'], array_keys($sets));
+            $this->_setStructureContents('set', ['command'], 'VALUES');
+            $this->_setStructureContents('set', ['bind', 'comma', 'parentheses'], array_values($sets));
+            
             return $this;
         }
 
@@ -141,9 +141,7 @@ namespace Trestle\blueprints {
             $this->_backtrace[] = __METHOD__;
 
             $this->_setStructure([
-                "UPDATE",
                 "~table",
-                "SET",
                 "~set",
                 "~where",
             ]);
@@ -151,11 +149,14 @@ namespace Trestle\blueprints {
             if(empty($sets)) {
                 throw new QueryException('The update method requires the second parameter to be set as an array.');
             }
-
-            $this->_structure['table'] = $this->_generateWrapList($table);
-            $this->_structure['set']   = $this->_generateSetList($sets);
-            $this->_bind['set']        = array_values($sets);
-
+            
+            $this->_setStructureContents('table', ['command'], 'UPDATE');
+            $this->_setStructureContents('table', ['column', 'comma'], $table);
+            
+            $this->_setStructureContents('set', ['command'], 'SET');
+            
+            $this->_setStructureContents('set', ['set', 'comma'], $sets);
+            
             return $this;
         }
 
@@ -169,12 +170,13 @@ namespace Trestle\blueprints {
             $this->_backtrace[] = __METHOD__;
 
             $this->_setStructure([
-                "DELETE FROM",
                 "~table",
                 "~where",
             ]);
-
-            $this->_structure['table'] = $this->_generateWrapList($table);
+            
+            $this->_setStructureContents('table', ['command'], 'DELETE FROM');
+            $this->_setStructureContents('table', ['column', 'comma'], $table);
+            
             return $this;
         }
 
@@ -201,8 +203,14 @@ namespace Trestle\blueprints {
             
             $this->_removeTablesFromGlobalTables($table);
             
-            $this->_structure['table'] = $this->_generateWrapList($this->_getGlobalTables());
-            $this->_structure['join'][] = $type . " " . $this->_generateWrapList($table);
+            $this->_resetStructureContents('table');
+            
+            $this->_setStructureContents('table', ['command'], 'FROM');
+            $this->_setStructureContents('table', ['column', 'comma'], $this->_getGlobalTables());
+            
+            $this->_setStructureContents('join', ['command'], $type);
+            $this->_setStructureContents('join', ['column', 'comma'], $table);
+            
             
             $this->_global['on'] = false;
             
@@ -282,6 +290,10 @@ namespace Trestle\blueprints {
                 $this->_backtrace[] = __METHOD__;
             }
             
+            if($this->_checkStructureEmpty('join')) {
+                throw new QueryException('You can not call the on() method before calling the join() method.');
+            }
+            
             $operator = strtoupper($operator); 
 
             if(!in_array($operator, ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE'])) {
@@ -290,19 +302,18 @@ namespace Trestle\blueprints {
             
             if($this->_global['on'] === true) {
                 if($prefix == null) {
-                    $this->_structure['join'][] = 'AND';
+                    $this->_setStructureContents('join', ['command'], 'AND');
                 } elseif($prefix != null) {
-                    $this->_structure['join'][] = $prefix;
+                    $this->_setStructureContents('join', ['command'], $prefix);
                 }
             } else {
                 $this->_global['on'] = true;
-                $this->_structure['join'][] = "ON";
+                $this->_setStructureContents('join', ['command'], 'ON');
             }
             
-            $this->_structure['join'][] = 
-                $this->_generateWrapList($field) . ' ' . 
-                $operator . ' ' .
-                ($rawBind === true ? $value : $this->_generateWrapList($value));
+            $this->_setStructureContents('join', ['column', 'comma'], $field);
+            $this->_setStructureContents('join', ['operator'], $operator);
+            $this->_setStructureContents('join', ['column'], $value);
             
             return $this;
         }
@@ -384,41 +395,33 @@ namespace Trestle\blueprints {
                 throw new QueryException('The where method can not accept an array value if the operator is not "BETWEEN" & "NOT BETWEEN"');
             }
             
-            if($rawBind === true) {
-                if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
-                    $binds = "{$this->_generateWrapList($value[0])} AND {$this->_generateWrapList($value[1])}";
-                } else {
-                    $binds = $this->_generateWrapList($value);
-                }
-            } else {
-                if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
-                    $binds = '? AND ?';
-                } else {
-                    $binds = '?';
-                }
+            if(!$this->_checkStructureExist('where')) {
+                $this->_setStructureContents('where', ['command'], 'WHERE');
             }
             
-            if(!isset($this->_structure['where'])) {
-                $this->_structure['where'][] = 'WHERE';
-            }
             if(isset($prefix)) {
-                $this->_structure['where'][] = $prefix;
+                $this->_setStructureContents('where', ['command'], $prefix);
             }
-            $this->_structure['where'][] = $this->_generateWrapList($field);
-            $this->_structure['where'][] = $operator;
-            $this->_structure['where'][] = $binds;
             
-            if(!isset($this->_bind['where'])) {
-                $this->_bind['where'] = [];
-            }
-            if($rawBind === false) {
-                if(is_array($value)) {
-                    $this->_bind['where'] = array_merge($this->_bind['where'], $value);
+            $this->_setStructureContents('where', ['column', 'comma'], $field);
+            $this->_setStructureContents('where', ['operator'], $operator);
+            
+            if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
+                $this->_setStructureContents('where', ['bind'], $value[0]);
+                $this->_setStructureContents('where', ['operator'], 'AND');
+                $this->_setStructureContents('where', ['bind'], $value[1]);
+            } else {
+                if($rawBind === true) {
+                    $params = 'column';
                 } else {
-                    $this->_bind['where'][] = ($operator == 'LIKE' ? '%' . $value . '%' : $value);
+                    $params = 'bind';
                 }
+                if($operator == 'LIKE') {
+                    $value = '%' . $value . '%';
+                }
+                $this->_setStructureContents('where', [$params], $value);
             }
-
+            
             return $this;
         }
 
@@ -435,10 +438,11 @@ namespace Trestle\blueprints {
          */
         public function andWhere($field, $operator, $value, $rawBind = false) {
             $this->_backtrace[] = __METHOD__;
-
-            if(empty($this->_structure['where'])) {
+            
+            if($this->_checkStructureEmpty('where')) {
                 throw new QueryException('You can not call the andWhere() method before calling the where() method.');
             }
+            
             $this->where($field, $operator, $value, $rawBind, 'AND');
 
             return $this;
@@ -458,9 +462,10 @@ namespace Trestle\blueprints {
         public function orWhere($field, $operator, $value, $rawBind = false) {
             $this->_backtrace[] = __METHOD__;
 
-            if(empty($this->_structure['where'])) {
+            if($this->_checkStructureEmpty('where')) {
                 throw new QueryException('You can not call the orWhere() method before calling the where() method.');
             }
+            
             $this->where($field, $operator, $value, $rawBind, 'OR');
 
             return $this;
@@ -475,27 +480,32 @@ namespace Trestle\blueprints {
          */
         public function order($fields, $order = 'ASC'){
             $this->_backtrace[] = __METHOD__;
-            $this->_structure['order'][] = "ORDER BY";
-            $this->_structure['order'][] = $this->_generateWrapList($fields);
+
             if(in_array($order, ['ASC', 'DESC'])) {
-                $this->_structure['order'][] = $order;
+                $order = $order;
             } else {
-                $this->_structure['order'][] = 'ASC';
+                $order = 'ASC';
             }
+            
+            $this->_setStructureContents('order', ['command'], 'ORDER BY');
+            $this->_setStructureContents('order', ['column', 'comma'], $fields);
+            $this->_setStructureContents('order', ['operator'], $order);
+            
             return $this;
         }
 
         /**
          * Groups the returned data by a column.
          *
-         * @param  string $value The field to group by.
+         * @param  string $fields The field(s) to group by.
          * @return object $this
          */
-        public function group($value) {
+        public function group($fields) {
             $this->_backtrace[] = __METHOD__;
 
-            $this->_structure['group'] = 'GROUP BY ?';
-            $this->_bind['group']      = $value;
+            $this->_setStructureContents('order', ['command'], 'GROUP BY');
+            $this->_setStructureContents('order', ['column', 'comma'], $fields);
+            
             return $this;
         }
 
@@ -511,16 +521,20 @@ namespace Trestle\blueprints {
         public function offset($offset) {
             $this->_backtrace[] = __METHOD__;
 
+            $this->_global['offset'] = true;
+            
             if(!is_int($offset)) {
                 throw new QueryException('The offset method must be supplied an integer.');
             }
-            if(isset($this->_bind['limit'])) {
-                $this->_structure['offset'] = 'LIMIT ?,';
-                $this->_structure['limit']  = "?";
-            }
             
-            $this->_bind['offset'] = $offset;
-            return $this;
+            $this->_global['offset'] = $offset;
+            
+            if(isset($this->_global['limit'])) {
+                $this->_resetStructureContents('limit');
+                return $this->limit($this->_global['limit']);
+            } else {
+                return $this;
+            }
         }
 
         /**
@@ -533,19 +547,24 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function limit($limit) {
-            $this->_backtrace[] = __METHOD__;
-
+            if(!in_array(__METHOD__, $this->_backtrace)) {
+                $this->_backtrace[] = __METHOD__;
+            }
+            
             if(!is_int($limit)) {
                 throw new QueryException('The limit method must be supplied an integer.');
             }
-            if(isset($this->_bind['offset'])) {
-                $this->_structure['offset'] = 'LIMIT ?,';
-                $this->_structure['limit']  = "?";
+            
+            $this->_global['limit'] = $limit;
+            
+            if(!isset($this->_global['offset'])) {
+                $offset = 0;
             } else {
-                $this->_structure['limit'] = "LIMIT ?";
+                $offset = $this->_global['offset'];
             }
             
-            $this->_bind['limit'] = $limit;
+            $this->_setStructureContents('limit', ['command'], 'LIMIT');
+            $this->_setStructureContents('limit', ['bind', 'comma', 'noquote'], [$offset, $limit]);
             
             return $this;
         }

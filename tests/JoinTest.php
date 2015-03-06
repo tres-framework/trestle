@@ -22,14 +22,14 @@ class JoinTest extends PHPUnit_Framework_TestCase {
         $expects['binds'] = [];
         $query            = $this->db->read(['articles.id', 'articles.title', 'users.username'])
                                      ->where('articles.author', '=', 'users.id', true)
-                                     ->exec();
+                                     ->execRaw();
 
         $this->assertEquals($expects['query'], $query->debug()['query']);
         $this->assertEquals($expects['binds'], $query->debug()['binds']);
         
         $query            = $this->db->read(['articles', 'users'], ['articles.id', 'articles.title', 'users.username'])
                                      ->where('articles.author', '=', 'users.id', true)
-                                     ->exec();
+                                     ->execRaw();
 
         $this->assertEquals($expects['query'], $query->debug()['query']);
         $this->assertEquals($expects['binds'], $query->debug()['binds']);

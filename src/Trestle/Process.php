@@ -81,7 +81,7 @@ namespace Trestle {
          */
         public function query($statement, array $binds = array(), array $debug = array()) {
             try {
-                Log::start('query');
+                Log::start('request');
                 
                 $this->_debug = $debug;
                 $this->statement = $this->_connection->prepare($statement);
@@ -112,8 +112,7 @@ namespace Trestle {
                     $this->status = false;
                 }
                 
-                $this->_debug['execution']['build'] = Log::end('build');
-                $this->_debug['execution']['query'] = Log::end('query');
+                $this->_debug['execution']['request'] = Log::end('request');
                 $this->_debug['execution']['total'] = Log::end('total');
                 
                 $msg  = "Query Request".PHP_EOL;

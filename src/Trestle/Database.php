@@ -103,7 +103,7 @@ namespace Trestle {
         public function __call($method, $args) { // TODO: Improve DocBlock.
             try {
                 $method = strtolower($method);
-                if(in_array($method, ['query', 'create', 'read', 'update', 'delete'])) {
+                if(in_array($method, ['query', 'create', 'read', 'update', 'delete', 'raw'])) {
 
                     Log::start('total');
 

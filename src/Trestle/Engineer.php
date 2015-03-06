@@ -81,7 +81,9 @@ namespace Trestle {
          */
         public function __construct(Process $db) {
             $this->_db = $db;
-            Log::start('build');
+            $this->_global['raw']      = false;
+            $this->_global['raw_temp'] = false;
+            Log::start('aggregation');
         }
 
         /**
@@ -91,8 +93,11 @@ namespace Trestle {
          */
         public function exec() {
             if(isset($this->pattern)) {
+                $execution['aggregation'] = Log::end('aggregation');
+                Log::start('build');
                 $query = $this->_buildQuery();
-
+                $execution['build'] = Log::end('build');
+                
                 $debug = debug_backtrace();
                 
                 return $this->_db->query($query, $this->_bindings, [
@@ -106,9 +111,19 @@ namespace Trestle {
                     'error'     => null,
                     'query'     => (empty(trim($query)) ? 'No query' : $query),
                     'binds'     => $this->_bindings,
-                    'execution' => [],
+                    'execution' => $execution,
                 ]);
             }
+        }
+
+        /**
+         * Determines the end of the query.
+         *
+         * @return object The database object; to access methods like results(), first(), etc.
+         */
+        public function execRaw() {
+            $this->_global['raw'] = true;
+            return $this->exec();
         }
 
         /**
@@ -127,6 +142,133 @@ namespace Trestle {
         }
 
         /**
+         * Sets the pattern the query should be build into.
+         *
+         * @param  array        $pattern    The pattern of the query.
+         * @param  array|string $parameters The properties each element should have.
+         * @param  array|string $content    The content to join to the query and format.
+         * @return void
+         */
+        protected function _setStructureContents($pattern, $parameters, $contents) {
+            if(!is_array($parameters)) {
+                $parameters = [0 => $parameters];
+            }
+            if(!is_array($contents)) {
+                $contents = [0 => $contents];
+            }
+            $this->_structure[$pattern][] = [
+                'parameters' => $parameters,
+                'contents'   => $contents
+            ];
+        }
+
+        /**
+         * Resets the structure content for a specific pattern.
+         *
+         * @param  array $pattern    The pattern of the query.
+         * @return void
+         */
+        protected function _resetStructureContents($pattern) {
+            $this->_structure[$pattern] = [];
+        }
+
+        /**
+         * Checks to see an already defined structure has data in it for the 
+         * pattern value.
+         *
+         * @param  array   $pattern The pattern of the query.
+         * @return boolean
+         */
+        protected function _checkStructureExist($pattern) {
+            if(isset($this->_structure[$pattern])) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Checks to see an already defined structure exists for the pattern value.
+         *
+         * @param  array   $pattern The pattern of the query.
+         * @return boolean
+         */
+        protected function _checkStructureEmpty($pattern) {
+            if(empty($this->_structure[$pattern])) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Adds the proper syntax for the content
+         * 
+         * @param  array $pattern           The pattern of the query.
+         * @param  array|string $parameters The properties each element should have.
+         * @param  array|string $content    The content to join to the query and format.
+         * @return string                   Formatted string.
+         */
+        private function _addStructureContentsParamters($pattern, $parameters, $contents) {
+            if(!is_array($contents)) {
+                $contents = [0 => $contents];
+            }
+            foreach($contents as $key => $content) {
+                // Set individual parameters
+                $params[$key] = $parameters;
+                $rawKey       = false;
+                $rawValue     = false;
+                $raw          = false;
+                if(in_array('noquote', $params[$key])) {
+                    $quote    = false;
+                } else {
+                    $quote    = true;
+                }
+                if(strpos($content, '::') !== false) {
+                    preg_match(
+                        '/trestle::(.*?)::(.*?)$/', 
+                        $content, 
+                        $matches
+                    );
+                    switch($matches[1]) {
+                        case 'raw':
+                            if(array_search('column', $params[$key]) !== false) {
+                                unset($params[$key][array_search('column', $params[$key])]);
+                            }
+                            if(array_search('bind', $params[$key]) !== false) {
+                                unset($params[$key][array_search('bind', $params[$key])]);
+                            }
+                            $rawValue = true;
+                            $quote    = false;
+                            break;
+                    }
+                    $content = $matches[2];
+                }
+                if(in_array(['command', 'operator', 'bind'], $params[$key])) {
+                    $contents[$key] = $content;
+                } elseif(in_array('column', $params[$key])) {
+                    $contents[$key] = $this->_generateWrapList($content, $raw, $quote);
+                } elseif(in_array('bind', $params[$key])) {
+                    $contents[$key] = $this->_generateBindList($pattern, $content, $raw, $quote);
+                } elseif(in_array('set', $params[$key])) {
+                    $contents[$key] = $this->_generateSetList($pattern, [$key => $content], $rawKey, $rawValue, $quote);
+                } else {
+                    $contents[$key] = $content;
+                }
+            }
+            // Group parameters
+            if(in_array('comma', $parameters)) {
+                $contents = $this->_generateList($contents);
+            } else {
+                $contents = implode(' ', $contents);
+            }
+            if(in_array('parentheses', $parameters)) {
+                $contents = '(' . $contents . ')';
+            }
+            return $contents;
+        }
+        
+        /**
          * Builds the query from the setStructure() pattern.
          *
          * @return string The query string
@@ -140,33 +282,18 @@ namespace Trestle {
                 $patternBit = substr($bit, 1);
                 if(substr($bit, 0, 1) == '~') {
                     if(isset($this->_structure[$patternBit])) {
-                        $structureBit = $this->_structure[$patternBit];
-                        if(is_array($structureBit)) {
-                            $structureBit = $this->_buildSubQuery($structureBit);
+                        foreach($this->_structure[$patternBit] as $segment) {
+                            $query .= $this->_addStructureContentsParamters(
+                                $patternBit,
+                                $segment['parameters'],
+                                $segment['contents']
+                            ) . ' ';
                         }
-                        $query .= $structureBit . ' ';
                         $this->_addBind($patternBit);
                     }
                 } else {
                     $query .= $bit . ' ';
                 }
-            }
-            return rtrim($query);
-        }
-
-        /**
-         * Builds part of the query from an array
-         * 
-         * @param  array  $queryArray The query to parse in an array
-         * @return string A part of the whole query
-         */
-        private function _buildSubQuery($queryArray) {
-            $query = '';
-            foreach($queryArray as $bit) {
-                if(is_array($bit)) {
-                    $query .= $this->_buildSubQuery($bit);
-                }
-                $query .= $bit . ' ';
             }
             return rtrim($query);
         }
@@ -187,26 +314,31 @@ namespace Trestle {
                     foreach($this->_bind[$value] as $k => $v) {
                         // Is the key named or positional?
                         if(substr($k, 0, 1) == ':') {
+                            $checkNamed             = true;
+                            $this->_bindings[$k]    = $v;
+                        } else {
                             $checkPositional = true;
-                        } else {
-                            $checkNamed      = true;
+                            // Start at 1 for bindParam
+                            if(empty($this->_bindings)) {
+                                $this->_bindings[1] = $v;
+                            } else {
+                                $this->_bindings[]  = $v;
+                            }
                         }
-                        if($checkNamed != $checkPositional) {
-                            $this->_bindings[$k] = $v;
-                        } else {
+                        if($checkNamed == $checkPositional) {
                             throw new QueryException(
                                 'You can not mix named (:example) and positional (?) bindings together.'
                             );
                         }
                     }
                 } else {
-                    $this->_bindings[] = $this->_bind[$value];
+                    if(empty($this->_bindings)) {
+                        $this->_bindings[1] = $this->_bind[$value];
+                    } else {
+                        $this->_bindings[]  = $this->_bind[$value];
+                    }
                 }
             }
-            // Bind value starts at 1 rather then 0, so we need to force the array
-            // to start at 1 rather then 0; because you know... standards.
-            array_unshift($this->_bindings, null);
-            unset($this->_bindings[0]);
         }
 
         /**
@@ -232,7 +364,7 @@ namespace Trestle {
          */
         protected function _generateWrapList($values) {
             foreach((array)$values as $string) {
-                if($table = strstr($string, '.', true)) {
+                if(strstr($string, '.', true)) {
                     $pos = strpos($string, '.');
                     if($pos !== false) {
                         $string = substr_replace(
@@ -252,15 +384,34 @@ namespace Trestle {
         /**
          * Builds a list of placeholders ("?, ?, ?").
          *
-         * @param  int    $count Number of binds you want.
-         * @return string The bind list
+         * @param  string  $pattern Current pattern being used.
+         * @param  int     $count   Number of binds you want.
+         * @return string           The bind list
          */
-        protected function _generateBindList($count) {
+        protected function _generateBindList($pattern, $values, $raw = false, $quotes = true) {
             $data = '';
-            for($i = 0; $i < $count; $i++) {
-                $data .= '?';
-                if($i < $count - 1) {
-                    $data .= ', ';
+            if(is_array($values)) {
+                foreach($values as $key => $value) {
+                    if($this->_global['raw'] === true OR $this->_global['raw_temp'] === true) {
+                        $data .= $value;
+                    } else {
+                        $data .= '?';
+                    }
+                    if(isset($values[$key + 1])) {
+                        $data .= ', ';
+                    }
+                    $this->_bind[$pattern][] = $values;
+                }
+            } else {
+                if($this->_global['raw'] === true OR $raw === true) {
+                    if($quotes === false) {
+                        $data .= $values;
+                    } else {
+                        $data .= '\'' . addslashes($values) . '\'';
+                    }
+                } else {
+                    $data .= '?';
+                    $this->_bind[$pattern][] = $values;
                 }
             }
             return $data;
@@ -269,24 +420,25 @@ namespace Trestle {
         /**
          * Creates a list of variables used when setting data in the database.
          * ex. `username` = ?, `email` = ?
-         *
+         * 
+         * @param  string       $pattern    Current pattern being used.
          * @param  array|string $values     The value(s) to wrap & set.
-         * @return string       The wrapped content.
+         * @return string                   The wrapped content.
          */
-        protected function _generateSetList($values) {
+        protected function _generateSetList($pattern, $values, $rawKey = false, $rawValue = false, $quote = true) {
             if(is_array($values)) {
                 $count = count($values);
                 $data  = '';
                 $i     = 1;
                 foreach($values as $key => $value) {
-                    $data .= $this->_generateWrapList($key) . ' = ?';
+                    $data .= $this->_generateWrapList($key, $rawKey, $quote) . ' = ' . $this->_generateBindList($pattern, $value, $rawValue, $quote);
                     if($i < $count) {
                         $data .= ', ';
                     }
                     $i++;
                 }
             } else {
-                $data = $this->_generateWrapList($key) . ' = ?';
+                $data = $this->_generateWrapList($values, $rawKey, $quote) . ' = ' . $this->_generateBindList($pattern, $value, $rawValue, $quote);
             }
             return $data;
         }
@@ -299,7 +451,6 @@ namespace Trestle {
          */
         protected function _checkForTablesAndColumns($values) {
             if(is_array($values)) {
-                // We only need to check the first value
                 $checkForColumns = $values[1];
             } else {
                 $checkForColumns = $values;
@@ -366,6 +517,7 @@ namespace Trestle {
                     unset($this->_global['tables'][$key]);
                 }
             }
+            $this->_global['tables'] = array_values($this->_global['tables']);
         }
         
         /**
@@ -376,6 +528,13 @@ namespace Trestle {
          */
         protected function _getGlobalTables() {
             return array_unique($this->_global['tables']);
+        }
+        
+        public function raw($value) {
+            // $tempObject = new \stdClass();
+            // $tempObject->value = $value;
+            // return $tempObject;
+            return 'trestle::raw::' . $value;
         }
         
     }

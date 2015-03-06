@@ -84,8 +84,8 @@ class ReadTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testReadGroup() {
-        $expects['query'] = 'SELECT * FROM `users` GROUP BY ?';
-        $expects['binds'] = [1 => 'firstname'];
+        $expects['query'] = 'SELECT * FROM `users` GROUP BY `firstname`';
+        $expects['binds'] = [];
         $query            = $this->db->read('users')
                                      ->group('firstname')
                                      ->exec();
@@ -95,8 +95,8 @@ class ReadTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testReadLimit() {
-        $expects['query'] = 'SELECT * FROM `articles` LIMIT ?';
-        $expects['binds'] = [1 => 3];
+        $expects['query'] = 'SELECT * FROM `articles` LIMIT ?, ?';
+        $expects['binds'] = [1 => 0, 2 => 3];
         $query            = $this->db->read('articles')
                                      ->limit(3)
                                      ->exec();
