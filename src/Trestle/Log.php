@@ -180,10 +180,7 @@ namespace Trestle {
                 self::_generateSecurity();
 
                 $ip = $_SERVER['REMOTE_ADDR'];
-                if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
-                    $ip = array_pop(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']));
-                }
-                
+
                 self::_logMessage(
                     self::_generateFilename($date->format('Y-m-d')),
                     "[{$date->format('Y-m-d h:m:s')}] [{$ip}] " . $log

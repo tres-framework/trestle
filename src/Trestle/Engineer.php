@@ -444,7 +444,7 @@ namespace Trestle {
         }
         
         /**
-         * Checks if the array h
+         * Checks if the array has a table present.
          *
          * @param  array   $values
          * @return boolean True = Has table & column | False = Only table 
@@ -531,9 +531,6 @@ namespace Trestle {
         }
         
         public function raw($value) {
-            // $tempObject = new \stdClass();
-            // $tempObject->value = $value;
-            // return $tempObject;
             return 'trestle::raw::' . $value;
         }
         
