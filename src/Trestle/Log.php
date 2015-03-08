@@ -132,9 +132,11 @@ namespace Trestle {
             $mtime = microtime();
             $mtime = explode(" ", $mtime);
             $mtime = $mtime[1] + $mtime[0];
+            
             if(isset($instance)) {
                 self::$_starttime[$instance] = $mtime;
             }
+            
             self::$_starttime['default_total'] = $mtime;
         }
         
@@ -148,6 +150,7 @@ namespace Trestle {
             if(empty(self::$_starttime)) {
                 throw new LogException('The Log class must have a start() method initiated.');
             }
+            
             $mtime     = microtime();
             $mtime     = explode(" ",$mtime);
             $endtime   = $mtime[1] + $mtime[0];
@@ -168,8 +171,6 @@ namespace Trestle {
          * @return void
          */
         public static function msg($log) {
-            // self::$_subDirectory = '';
-            
             $date = new DateTime('now');
             
             if(isset($log) && !empty($log)) {
@@ -180,6 +181,7 @@ namespace Trestle {
                 self::_generateSecurity();
 
                 $ip = $_SERVER['REMOTE_ADDR'];
+                
                 if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)) {
                     $ip = array_pop(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']));
                 }
@@ -196,7 +198,6 @@ namespace Trestle {
          *
          * @param string $log The type of log
          * @param array  $msg The message to report
-         * @return void
          */
         public static function __callStatic($log, $msg) {
             if(in_array($log, self::$_registered)) {
@@ -213,7 +214,6 @@ namespace Trestle {
          * Registers a name in the allowed type of logs.
          *
          * @param string $register The type of log to register
-         * @return void
          */
         public static function register($register) {
             self::$_registered[] = strtolower($register);
@@ -221,8 +221,7 @@ namespace Trestle {
         
         /**
          * Generates the directory to store the logs.
-         *
-         * @param  void    
+         * 
          * @return boolean 
          */
         private static function _generateDir() {
@@ -232,6 +231,7 @@ namespace Trestle {
             } else {
                 $status = true;
             }
+            
             return $status;
         }
         

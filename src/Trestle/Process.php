@@ -69,14 +69,18 @@ namespace Trestle {
                 return $this->_connection;
             } catch(PDOException $e) {
                 $error  = "Connection failed for \"{$this->_activeDB}\" database.";
+                
                 $msg  = $error.PHP_EOL;
                 $msg .= "|-> " . $e->getMessage();
+                
                 Log::database($msg);
+                
                 if(Config::get('throw/database')) {
                     $errorDetails = $e->getMessage();
                 } else {
                     $errorDetails = "Please check your database configuration and the logs for more information.";
                 }
+                
                 throw new DatabaseException($error . ' ' . $errorDetails);
             }
         }
@@ -93,6 +97,7 @@ namespace Trestle {
             if(!$this->_connection instanceof PDO) {
                 throw new DatabaseException('No database connection detected, does the variable have a Trestle instance or has the connection been disconnected?');
             }
+            
             try {
                 Log::start('request');
                 
@@ -100,6 +105,7 @@ namespace Trestle {
                 $this->statement = $this->_connection->prepare($statement);
                 
                 $i = 1;
+                
                 if(count($binds)) {
                     foreach($binds as $key => $bind) {
                         if(is_int($bind)) {
@@ -135,7 +141,6 @@ namespace Trestle {
                 $msg .-" |-> {$this->_debug['query']}";
                 
                 Log::request($msg);
-                
             } catch(PDOException $e) {
                 $this->_debug['error'] = $e->getMessage();
                 
@@ -148,7 +153,6 @@ namespace Trestle {
                 if(Config::get('throw/query')) {
                     throw new QueryException($this->_debug['error']);
                 }
-                
             }
             
             return $this;
@@ -213,7 +217,9 @@ namespace Trestle {
             } catch(PDOException $e) {
                 $msg  = "Connection failure for \"{$this->_activeDB}\" database, unable to disconnect.".PHP_EOL;
                 $msg .= "|-> " . $e->getMessage().PHP_EOL;
+                
                 Log::database($msg);
+                
                 if(Config::get('throw/database')) {
                     throw new DatabaseException($msg);
                 }
