@@ -18,7 +18,7 @@ namespace Trestle {
     class Engineer {
 
         /**
-         * Whether the master method is set.
+         * Whether the base method is set.
          * (query, get, create, update, delete)
          *
          * @var bool
@@ -147,7 +147,6 @@ namespace Trestle {
          * @param  array        $pattern    The pattern of the query.
          * @param  array|string $parameters The properties each element should have.
          * @param  array|string $content    The content to join to the query and format.
-         * @return void
          */
         protected function _setStructureContents($pattern, $parameters, $contents) {
             if(!is_array($parameters)) {
@@ -165,8 +164,7 @@ namespace Trestle {
         /**
          * Resets the structure content for a specific pattern.
          *
-         * @param  array $pattern    The pattern of the query.
-         * @return void
+         * @param array $pattern The pattern of the query.
          */
         protected function _resetStructureContents($pattern) {
             $this->_structure[$pattern] = [];
@@ -303,8 +301,7 @@ namespace Trestle {
          * Also checks for valid binds, filters out blanks and merges the
          * arrays together
          * 
-         * @param  string|array $value An array of the binds for the query
-         * @return void
+         * @param  string|array $value An array of the binds for the query.
          */
         private function _addBind($value) {
             $checkNamed      = false;
@@ -487,8 +484,7 @@ namespace Trestle {
         /**
          * Adds a table or an array of tables to the global $this->_global['table']
          * 
-         * @param  array|string $table The table(s) to add to global tables
-         * @return void
+         * @param  array|string $table The table(s) to add to global tables.
          */
         protected function _addTablesToGlobalTables($table) {
             if(is_array($table)) {
@@ -505,7 +501,6 @@ namespace Trestle {
          * Removes a table or an array of tables from the global $this->_global['table']
          * 
          * @param  array|string $table The table(s) to remove from global tables
-         * @return void
          */
         protected function _removeTablesFromGlobalTables($table) {
             if(is_array($table)) {
@@ -521,10 +516,9 @@ namespace Trestle {
         }
         
         /**
-         * Returns a list of unique tables from $this->_global['table']
+         * Returns a list of unique tables from $this->_global['table'].
          * 
-         * @param  void
-         * @return array List of tables
+         * @return array List of tables.
          */
         protected function _getGlobalTables() {
             return array_unique($this->_global['tables']);
