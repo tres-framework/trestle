@@ -18,7 +18,7 @@ namespace Trestle {
     class Engineer {
 
         /**
-         * Whether the master method is set.
+         * Whether the base method is set.
          * (query, get, create, update, delete)
          *
          * @var bool
@@ -83,6 +83,7 @@ namespace Trestle {
             $this->_db = $db;
             $this->_global['raw']      = false;
             $this->_global['raw_temp'] = false;
+            
             Log::start('aggregation');
         }
 
@@ -138,6 +139,7 @@ namespace Trestle {
                 $this->_master = true;
                 $this->_masterMethod = debug_backtrace()[1]['function'];
             }
+            
             $this->pattern = $pattern;
         }
 
@@ -147,15 +149,16 @@ namespace Trestle {
          * @param  array        $pattern    The pattern of the query.
          * @param  array|string $parameters The properties each element should have.
          * @param  array|string $content    The content to join to the query and format.
-         * @return void
          */
         protected function _setStructureContents($pattern, $parameters, $contents) {
             if(!is_array($parameters)) {
                 $parameters = [0 => $parameters];
             }
+            
             if(!is_array($contents)) {
                 $contents = [0 => $contents];
             }
+            
             $this->_structure[$pattern][] = [
                 'parameters' => $parameters,
                 'contents'   => $contents
@@ -165,8 +168,7 @@ namespace Trestle {
         /**
          * Resets the structure content for a specific pattern.
          *
-         * @param  array $pattern    The pattern of the query.
-         * @return void
+         * @param array $pattern The pattern of the query.
          */
         protected function _resetStructureContents($pattern) {
             $this->_structure[$pattern] = [];
@@ -180,11 +182,7 @@ namespace Trestle {
          * @return boolean
          */
         protected function _checkStructureExist($pattern) {
-            if(isset($this->_structure[$pattern])) {
-                return true;
-            } else {
-                return false;
-            }
+            return (isset($this->_structure[$pattern]));
         }
 
         /**
@@ -194,11 +192,7 @@ namespace Trestle {
          * @return boolean
          */
         protected function _checkStructureEmpty($pattern) {
-            if(empty($this->_structure[$pattern])) {
-                return true;
-            } else {
-                return false;
-            }
+            return (empty($this->_structure[$pattern]));
         }
 
         /**
@@ -213,23 +207,27 @@ namespace Trestle {
             if(!is_array($contents)) {
                 $contents = [0 => $contents];
             }
+            
             foreach($contents as $key => $content) {
                 // Set individual parameters
                 $params[$key] = $parameters;
                 $rawKey       = false;
                 $rawValue     = false;
                 $raw          = false;
+                
                 if(in_array('noquote', $params[$key])) {
                     $quote    = false;
                 } else {
                     $quote    = true;
                 }
+                
                 if(strpos($content, '::') !== false) {
                     preg_match(
                         '/trestle::(.*?)::(.*?)$/', 
                         $content, 
                         $matches
                     );
+                    
                     switch($matches[1]) {
                         case 'raw':
                             if(array_search('column', $params[$key]) !== false) {
@@ -242,8 +240,10 @@ namespace Trestle {
                             $quote    = false;
                             break;
                     }
+                    
                     $content = $matches[2];
                 }
+                
                 if(in_array(['command', 'operator', 'bind'], $params[$key])) {
                     $contents[$key] = $content;
                 } elseif(in_array('column', $params[$key])) {
@@ -256,15 +256,18 @@ namespace Trestle {
                     $contents[$key] = $content;
                 }
             }
+            
             // Group parameters
             if(in_array('comma', $parameters)) {
                 $contents = $this->_generateList($contents);
             } else {
                 $contents = implode(' ', $contents);
             }
+            
             if(in_array('parentheses', $parameters)) {
                 $contents = '(' . $contents . ')';
             }
+            
             return $contents;
         }
         
@@ -277,7 +280,9 @@ namespace Trestle {
             if(!isset($this->pattern)) {
                 throw new QueryException('Can\'t build query, no query structure set in master method!');
             }
+            
             $query = '';
+            
             foreach($this->pattern as $bit) {
                 $patternBit = substr($bit, 1);
                 if(substr($bit, 0, 1) == '~') {
@@ -289,12 +294,14 @@ namespace Trestle {
                                 $segment['contents']
                             ) . ' ';
                         }
+                        
                         $this->_addBind($patternBit);
                     }
                 } else {
                     $query .= $bit . ' ';
                 }
             }
+            
             return rtrim($query);
         }
         
@@ -303,12 +310,12 @@ namespace Trestle {
          * Also checks for valid binds, filters out blanks and merges the
          * arrays together
          * 
-         * @param  string|array $value An array of the binds for the query
-         * @return void
+         * @param  string|array $value An array of the binds for the query.
          */
         private function _addBind($value) {
             $checkNamed      = false;
             $checkPositional = false;
+            
             if(isset($this->_bind[$value])) {
                 if(is_array($this->_bind[$value])) {
                     foreach($this->_bind[$value] as $k => $v) {
@@ -318,6 +325,7 @@ namespace Trestle {
                             $this->_bindings[$k]    = $v;
                         } else {
                             $checkPositional = true;
+                            
                             // Start at 1 for bindParam
                             if(empty($this->_bindings)) {
                                 $this->_bindings[1] = $v;
@@ -325,6 +333,7 @@ namespace Trestle {
                                 $this->_bindings[]  = $v;
                             }
                         }
+                        
                         if($checkNamed == $checkPositional) {
                             throw new QueryException(
                                 'You can not mix named (:example) and positional (?) bindings together.'
@@ -366,6 +375,7 @@ namespace Trestle {
             foreach((array)$values as $string) {
                 if(strstr($string, '.', true)) {
                     $pos = strpos($string, '.');
+                    
                     if($pos !== false) {
                         $string = substr_replace(
                             $string,
@@ -378,6 +388,7 @@ namespace Trestle {
                 
                 $allStrings[] = $this->_varWrapper . $string . $this->_varWrapper;
             }
+            
             return implode(', ', $allStrings);
         }
         
@@ -390,6 +401,7 @@ namespace Trestle {
          */
         protected function _generateBindList($pattern, $values, $raw = false, $quotes = true) {
             $data = '';
+            
             if(is_array($values)) {
                 foreach($values as $key => $value) {
                     if($this->_global['raw'] === true OR $this->_global['raw_temp'] === true) {
@@ -397,9 +409,11 @@ namespace Trestle {
                     } else {
                         $data .= '?';
                     }
+                    
                     if(isset($values[$key + 1])) {
                         $data .= ', ';
                     }
+                    
                     $this->_bind[$pattern][] = $values;
                 }
             } else {
@@ -414,6 +428,7 @@ namespace Trestle {
                     $this->_bind[$pattern][] = $values;
                 }
             }
+            
             return $data;
         }
 
@@ -430,16 +445,20 @@ namespace Trestle {
                 $count = count($values);
                 $data  = '';
                 $i     = 1;
+                
                 foreach($values as $key => $value) {
                     $data .= $this->_generateWrapList($key, $rawKey, $quote) . ' = ' . $this->_generateBindList($pattern, $value, $rawValue, $quote);
+                    
                     if($i < $count) {
                         $data .= ', ';
                     }
+                    
                     $i++;
                 }
             } else {
                 $data = $this->_generateWrapList($values, $rawKey, $quote) . ' = ' . $this->_generateBindList($pattern, $value, $rawValue, $quote);
             }
+            
             return $data;
         }
         
@@ -471,6 +490,7 @@ namespace Trestle {
          */
         protected function _parseTables($values) {
             $tables = [];
+            
             if(is_array($values)) {
                 foreach($values as $string) {
                     if($table = strstr($string, '.', true)) {
@@ -487,8 +507,7 @@ namespace Trestle {
         /**
          * Adds a table or an array of tables to the global $this->_global['table']
          * 
-         * @param  array|string $table The table(s) to add to global tables
-         * @return void
+         * @param  array|string $table The table(s) to add to global tables.
          */
         protected function _addTablesToGlobalTables($table) {
             if(is_array($table)) {
@@ -505,7 +524,6 @@ namespace Trestle {
          * Removes a table or an array of tables from the global $this->_global['table']
          * 
          * @param  array|string $table The table(s) to remove from global tables
-         * @return void
          */
         protected function _removeTablesFromGlobalTables($table) {
             if(is_array($table)) {
@@ -517,14 +535,14 @@ namespace Trestle {
                     unset($this->_global['tables'][$key]);
                 }
             }
+            
             $this->_global['tables'] = array_values($this->_global['tables']);
         }
         
         /**
-         * Returns a list of unique tables from $this->_global['table']
+         * Returns a list of unique tables from $this->_global['table'].
          * 
-         * @param  void
-         * @return array List of tables
+         * @return array List of tables.
          */
         protected function _getGlobalTables() {
             return array_unique($this->_global['tables']);

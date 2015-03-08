@@ -67,13 +67,14 @@ namespace Trestle {
         /**
          * Gets the config.
          * 
-         * @param  string $item Get a specific key from the config.
-         * @return mixed  
+         * @param  string       $item Get a specific key from the config.
+         * @return array|string  
          */
         public static function get($item = null) {
             if(isset($item)) {
                 $keys = explode('/', $item);
                 $config = self::$_config;
+                
                 foreach($keys as $key => $value) {
                     if(isset($config[$value])) {
                         $config = $config[$value];
@@ -81,6 +82,7 @@ namespace Trestle {
                         return null;
                     }
                 }
+                
                 return $config;
             } else {
                 return self::$_config;
@@ -99,8 +101,8 @@ namespace Trestle {
             if(count($difference) == 2) {
                 $difference = implode(' & ', $difference);
             } elseif(count($difference) > 2) {
-                $last_diff = array_pop($difference);
-                $difference = implode(', ', $difference) . ' & ' . $last_diff;
+                $lastDiff = array_pop($difference);
+                $difference = implode(', ', $difference) . ' & ' . $lastDiff;
             } else {
                 $difference = implode(', ', $difference);
             }

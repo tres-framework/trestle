@@ -7,16 +7,16 @@ namespace Trestle\blueprints {
     use Trestle\Log;
     use Trestle\Process;
 
-    /**
-     *-------------------------------------------------------------------------
-     * MySQL blueprint
-     *-------------------------------------------------------------------------
-     *
-     * This is the blueprint for the MySQL database driver. There is a
-     * blueprint for every supported database driver, because not all drivers
-     * have the same SQL query syntax.
-     *
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | MySQL blueprint
+    |--------------------------------------------------------------------------
+    |
+    | This is the blueprint for the MySQL database driver. There is a
+    | blueprint for every supported database driver, because not all drivers
+    | share the same SQL syntax.
+    |
+    */
     class MySQL extends Engineer {
         
         /**
@@ -181,7 +181,7 @@ namespace Trestle\blueprints {
         }
 
         /**
-         * Specifics what tables, columns and data should be joined.
+         * Specifies what tables, columns and data should be joined.
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
@@ -218,7 +218,7 @@ namespace Trestle\blueprints {
         }
         
         /**
-         * Create an INNER JOIN
+         * Creates an INNER JOIN.
          *
          * @param  string $table The table to join
          * @return object $this
@@ -232,7 +232,7 @@ namespace Trestle\blueprints {
         }
         
         /**
-         * Create an LEFT JOIN
+         * Creates a LEFT JOIN.
          *
          * @param  string $table The table to join
          * @return object $this
@@ -246,7 +246,7 @@ namespace Trestle\blueprints {
         }
         
         /**
-         * Create an RIGHT JOIN
+         * Creates a RIGHT JOIN.
          *
          * @param  string $table The table to join
          * @return object $this
@@ -260,7 +260,7 @@ namespace Trestle\blueprints {
         }
         
         /**
-         * Create an FULL OUTER JOIN
+         * Creates a FULL OUTER JOIN.
          *
          * @param  string $table The table to join
          * @return object $this
@@ -281,7 +281,7 @@ namespace Trestle\blueprints {
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
          * @param  array|string $value    The value(s) to pass.
-         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  string       $prefix   If we need to pass a prefix like AND/OR.
          * @return object $this
          */
@@ -325,9 +325,9 @@ namespace Trestle\blueprints {
          * @param  string       $operator The operator to use:
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
-         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  array|string $value    The value(s) to pass.
-         * @return object $this
+         * @return object       $this
          */
         public function andOn($field, $operator, $value, $rawBind = false) {
             $this->_backtrace[] = __METHOD__;
@@ -344,7 +344,7 @@ namespace Trestle\blueprints {
          * @param  string       $operator The operator to use:
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
-         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
@@ -376,7 +376,7 @@ namespace Trestle\blueprints {
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
          * @param  array|string $value    The value(s) to pass.
-         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  string       $prefix   If we need to pass a prefix like AND/OR.
          * @return object       $this
          */
@@ -433,7 +433,7 @@ namespace Trestle\blueprints {
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
          * @param  array|string $value    The value(s) to pass.
-         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @return object       $this
          */
         public function andWhere($field, $operator, $value, $rawBind = false) {
@@ -456,7 +456,7 @@ namespace Trestle\blueprints {
          *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
          *                                LIKE
          * @param  array|string $value    The value(s) to pass.
-         * @param  boolean      $rawBind  Bind the values immediately
+         * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @return object       $this
          */
         public function orWhere($field, $operator, $value, $rawBind = false) {
