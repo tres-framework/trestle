@@ -41,7 +41,8 @@ namespace Trestle {
 
         /**
          * Sets configs into the $_config array and if validation is true checks 
-         * to see if a connection block has the required parameters with _validate.
+         * to see if a connection block has the required parameters with 
+         * _validate().
          *
          * @param  array $config The complete configuration.
          */
@@ -64,11 +65,11 @@ namespace Trestle {
         }
 
         /**
-         * Returns the entire config array unless and specific config item is 
+         * Returns the entire config array unless a specific config item is 
          * requested.
          * 
          * @param  string       $item Get a specific key from the config.
-         * @return array|string  
+         * @return array|string 
          */
         public static function get($item = null) {
             if(isset($item)) {
@@ -82,7 +83,6 @@ namespace Trestle {
                         return null;
                     }
                 }
-                
                 return $config;
             } else {
                 return self::$_config;
@@ -95,7 +95,7 @@ namespace Trestle {
          * just that it has the proper parameters to attempt a connection.
          * 
          * @param  string $name       Name of the connection.
-         * @param  array  $connection Array of connection.
+         * @param  array  $connection An array of connection.
          */
         private static function _validate($name, $connection) {
             $difference = array_diff(self::$_parameters, array_keys($connection));
