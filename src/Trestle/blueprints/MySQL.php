@@ -66,7 +66,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function query($query, $binds = []) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             $this->_setStructure([
                 "~query",
@@ -86,7 +86,7 @@ namespace Trestle\blueprints {
          * @return object       $this
          */
         public function read($table, $column = null) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->_setStructure([
                 "~column",
@@ -128,7 +128,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function create($table, array $sets) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             $this->_setStructure([
                 "~table",
@@ -154,7 +154,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function update($table, array $sets) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             $this->_setStructure([
                 "~table",
@@ -183,7 +183,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function delete($table) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             $this->_setStructure([
                 "~table",
@@ -207,9 +207,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function join($table, $type = 'JOIN') {
-            if(!in_array(explode("::", end($this->_backtrace))[1], ['innerJoin', 'leftJoin', 'rightJoin'])) {
-                $this->_backtrace[] = __METHOD__;
-            }
+            $this->_backtrace(['innerJoin', 'leftJoin', 'rightJoin']);
             
             $type = strtoupper($type);
             
@@ -240,7 +238,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function innerJoin($table) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->join($table, 'INNER JOIN');
             
@@ -254,7 +252,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function leftJoin($table) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->join($table, 'LEFT JOIN');
             
@@ -268,7 +266,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function rightJoin($table) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->join($table, 'RIGHT JOIN');
             
@@ -282,7 +280,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function fullOuterJoin($table) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->join($table, 'FULL OUTER JOIN');
             
@@ -302,9 +300,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function on($field, $operator, $value, $rawBind = false, $prefix = null) {
-            if(!in_array(explode("::", end($this->_backtrace))[1], ['andOn', 'orOn'])) {
-                $this->_backtrace[] = __METHOD__;
-            }
+            $this->_backtrace(['andOn', 'orOn']);
             
             if($this->_checkStructureEmpty('join')) {
                 throw new QueryException('You can not call the on() method before calling the join() method.');
@@ -346,7 +342,7 @@ namespace Trestle\blueprints {
          * @return object       $this
          */
         public function andOn($field, $operator, $value, $rawBind = false) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->on($field, $operator, $value, $rawBind, 'AND');
             
@@ -365,7 +361,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function orOn($field, $operator, $value, $rawBind = false) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             $this->on($field, $operator, $value, $rawBind, 'OR');
             
@@ -397,9 +393,7 @@ namespace Trestle\blueprints {
          * @return object       $this
          */
         public function where($field, $operator, $value, $rawBind = false, $prefix = null) {
-            if(!in_array(explode("::", end($this->_backtrace))[1], ['andWhere', 'orWhere'])) {
-                $this->_backtrace[] = __METHOD__;
-            }
+            $this->_backtrace(['andWhere', 'orWhere']);
             
             $operator = strtoupper($operator); 
 
@@ -453,7 +447,7 @@ namespace Trestle\blueprints {
          * @return object       $this
          */
         public function andWhere($field, $operator, $value, $rawBind = false) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
             
             if($this->_checkStructureEmpty('where')) {
                 throw new QueryException('You can not call the andWhere() method before calling the where() method.');
@@ -476,7 +470,7 @@ namespace Trestle\blueprints {
          * @return object       $this
          */
         public function orWhere($field, $operator, $value, $rawBind = false) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             if($this->_checkStructureEmpty('where')) {
                 throw new QueryException('You can not call the orWhere() method before calling the where() method.');
@@ -495,7 +489,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function order($fields, $order = 'ASC'){
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             if(in_array($order, ['ASC', 'DESC'])) {
                 $order = $order;
@@ -517,7 +511,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function group($fields) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             $this->_setStructureContents('order', ['command'], 'GROUP BY');
             $this->_setStructureContents('order', ['column', 'comma'], $fields);
@@ -535,7 +529,7 @@ namespace Trestle\blueprints {
          * @return object $this
          */
         public function offset($offset) {
-            $this->_backtrace[] = __METHOD__;
+            $this->_backtrace();
 
             $this->_global['offset'] = true;
             
@@ -564,7 +558,7 @@ namespace Trestle\blueprints {
          */
         public function limit($limit) {
             if(!in_array(__METHOD__, $this->_backtrace)) {
-                $this->_backtrace[] = __METHOD__;
+                $this->_backtrace();
             }
             
             if(!is_int($limit)) {

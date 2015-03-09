@@ -86,13 +86,34 @@ namespace Trestle {
             
             Log::start('aggregation');
         }
-
+        
+        /**
+         * Logs the methods used when creating the query.
+         *
+         * @param array|string $ignore Method(s) that should be ignored if last 
+         *                             last method called matches.
+         */
+        protected function _backtrace($ignore = []) {
+            $backtrace = debug_backtrace();
+            $lastItem  = end($this->_backtrace);
+            
+            if(!is_array($ignore)) {
+                $ignore = [$ignore];
+            }
+            
+            if(!in_array($lastItem, $ignore)) {
+                $this->_backtrace[] = $backtrace[1]['function'];
+            }
+        }
+        
         /**
          * Determines the end of the query.
          *
          * @return object The database object; to access methods like results(), first(), etc.
          */
         public function exec() {
+            $this->_backtrace('execRaw');
+            
             if(isset($this->pattern)) {
                 $execution['aggregation'] = Log::end('aggregation');
                 Log::start('build');
@@ -123,7 +144,10 @@ namespace Trestle {
          * @return object The database object; to access methods like results(), first(), etc.
          */
         public function execRaw() {
+            $this->_backtrace();
+            
             $this->_global['raw'] = true;
+            
             return $this->exec();
         }
 
