@@ -31,7 +31,21 @@ namespace Trestle\blueprints {
          *
          * @var boolean
          */
-        protected $_global = ['raw' => false];
+        protected $_global;
+        
+        /**
+         * Set MySQL specific global flags.
+         *
+         * @var boolean
+         */
+        protected $_joinTypes = ['JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN'];
+        
+        /**
+         * Set MySQL specific global flags.
+         *
+         * @var boolean
+         */
+        protected $_operators = ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE'];
         
         /**
          * Loads in the database.
@@ -40,6 +54,8 @@ namespace Trestle\blueprints {
          */
         public function __construct(Process $db) {
             parent::__construct($db);
+            
+            $this->_global['raw'] = false;
         }
 
         /**
@@ -197,7 +213,7 @@ namespace Trestle\blueprints {
             
             $type = strtoupper($type);
             
-            if(!in_array($type, ['JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'FULL OUTER JOIN'])) {
+            if(!in_array($type, $this->_joinTypes)) {
                 throw new QueryException('Please use a valid JOIN type.');
             }
             
@@ -296,7 +312,7 @@ namespace Trestle\blueprints {
             
             $operator = strtoupper($operator); 
 
-            if(!in_array($operator, ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE'])) {
+            if(!in_array($operator, $this->_operators)) {
                 throw new QueryException('Please use a valid operator.');
             }
             
@@ -387,7 +403,7 @@ namespace Trestle\blueprints {
             
             $operator = strtoupper($operator); 
 
-            if(!in_array($operator, ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE'])) {
+            if(!in_array($operator, $this->_operators)) {
                 throw new QueryException('Please use a valid operator.');
             }
             
