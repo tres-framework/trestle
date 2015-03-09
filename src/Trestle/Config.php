@@ -23,6 +23,7 @@ namespace Trestle {
          * @var private
          */
         private static $_config = [
+            'display_errors' => false,
             'validation'     => true,
         ];
 
@@ -40,8 +41,7 @@ namespace Trestle {
         ];
 
         /**
-         * Sets configs into the $_config array and if validation is true checks 
-         * to see if a connection block has the required parameters with _validate.
+         * Sets the config.
          *
          * @param  array $config The complete configuration.
          */
@@ -57,15 +57,15 @@ namespace Trestle {
             self::$_config = array_merge(self::$_config, $config);
 
             if(self::$_config['validation'] === true) {
+                // Make sure each connection is valid.
                 foreach($config['connections'] as $name => $connection) {
-                    self::_validate($name, $connection);
+                    self::validate($name, $connection);
                 }
             }
         }
 
         /**
-         * Returns the entire config array unless and specific config item is 
-         * requested.
+         * Gets the config.
          * 
          * @param  string       $item Get a specific key from the config.
          * @return array|string  
@@ -90,14 +90,12 @@ namespace Trestle {
         }
 
         /**
-         * Validates a configuration block by comparing it to the class variable 
-         * $_parameters. This block does not validate that a connection will work, 
-         * just that it has the proper parameters to attempt a connection.
-         * 
+         * Validates a configuration option.
+         *
          * @param  string $name       Name of the connection.
          * @param  array  $connection Array of connection.
          */
-        private static function _validate($name, $connection) {
+        private static function validate($name, $connection) { // TODO: Improve DocBlock.
             $difference = array_diff(self::$_parameters, array_keys($connection));
 
             if(count($difference) == 2) {
