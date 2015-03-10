@@ -571,6 +571,13 @@ namespace Trestle {
             return array_unique($this->_global['tables']);
         }
         
+        /**
+         * Tells trestle to insert value as raw value in query syntax.
+         * 
+         * @param  string $value The value to insert into the syntax
+         * @return string        The new formatted raw string (trestle::raw::<value>)
+         *                       to insert into the syntax.
+         */
         public function raw($value) {
             return 'trestle::raw::' . $value;
         }
