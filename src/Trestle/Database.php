@@ -27,10 +27,11 @@ namespace Trestle {
     use ReflectionMethod;
     use Trestle\Build;
     use Trestle\Config;
+    use Trestle\Stopwatch;
+    use Trestle\Process;
     use Trestle\TrestleException;
     use Trestle\DatabaseException;
     use Trestle\Log;
-    use Trestle\Process;
 
     /**
      *-------------------------------------------------------------------------
@@ -96,7 +97,7 @@ namespace Trestle {
             $method = strtolower($method);
             if(in_array($method, ['query', 'create', 'read', 'update', 'delete', 'raw'])) {
 
-                Log::start('total');
+                Stopwatch::start('total');
 
                 $driver = "Trestle\blueprints\\{$this->_config['driver']}";
 

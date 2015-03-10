@@ -5,6 +5,7 @@ namespace Trestle {
     use PDO;
     use PDOException;
     use Trestle\Config;
+    use Trestle\Stopwatch;
     use Trestle\DatabaseException;
     use Trestle\QueryException;
     use Trestle\Log;
@@ -99,7 +100,7 @@ namespace Trestle {
             }
             
             try {
-                Log::start('request');
+                Stopwatch::start('request');
                 
                 $this->_debug = $debug;
                 $this->statement = $this->_connection->prepare($statement);
@@ -131,8 +132,8 @@ namespace Trestle {
                     $this->status = false;
                 }
                 
-                $this->_debug['execution']['request'] = Log::end('request');
-                $this->_debug['execution']['total'] = Log::end('total');
+                $this->_debug['execution']['request'] = Stopwatch::stop('request');
+                $this->_debug['execution']['total'] = Stopwatch::stop('total');
                 
                 $msg  = "Query Request".PHP_EOL;
                 $msg .= "|-> ".$this->_debug['query'].PHP_EOL;

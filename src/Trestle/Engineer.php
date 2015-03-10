@@ -4,7 +4,7 @@ namespace Trestle {
 
     use ReflectionClass;
     use Trestle\QueryException;
-    use Trestle\Log;
+    use Trestle\Stopwatch;
     use Trestle\Process;
 
     /*
@@ -77,14 +77,13 @@ namespace Trestle {
          * Loads in the database.
          *
          * @param \Trestle\Process $db  The database instance.
-         * @param \Trestle\Log     $log The logger.
          */
         public function __construct(Process $db) {
             $this->_db = $db;
             $this->_global['raw']      = false;
             $this->_global['raw_temp'] = false;
             
-            Log::start('aggregation');
+            Stopwatch::start('aggregation');
         }
         
         /**
@@ -115,10 +114,10 @@ namespace Trestle {
             $this->_backtrace('execRaw');
             
             if(isset($this->pattern)) {
-                $execution['aggregation'] = Log::end('aggregation');
-                Log::start('build');
+                $execution['aggregation'] = Stopwatch::stop('aggregation');
+                Stopwatch::start('build');
                 $query = $this->_buildQuery();
-                $execution['build'] = Log::end('build');
+                $execution['build'] = Stopwatch::stop('build');
                 
                 $debug = debug_backtrace();
                 
