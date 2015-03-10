@@ -35,19 +35,6 @@ Trestle\Config::set([
             'password'  => 'password'
         ],
     ],
-    
-    'logs' => [
-        'dir' => [
-            'path'        => __DIR__.'/logs',
-            'permissions' => '775',
-        ],
-        
-        'file' => [
-            'ext'         => 'log',
-            'size'        => '100',
-            'permissions' => '775',
-        ],
-    ],
 ]);
 
 $db = new Trestle\Database('connection_name_1');

@@ -74,19 +74,6 @@ Trestle\Config::set([
             'password'  => 'password'
         ],
     ],
-    
-    'logs' => [
-        'dir' => [
-            'path'        => __DIR__.'/logs',
-            'permissions' => '775',
-        ],
-        
-        'file' => [
-            'ext'         => 'log',
-            'size'        => '100',
-            'permissions' => '775',
-        ],
-    ],
 ]);
 
 // Select database connection
@@ -284,20 +271,4 @@ $foobar = $db->query('...')
              ->exec();
 // Full debug
 $foobar->debug();
-```
-
-## Logs
-Trestle automatically creates logs for query request which can help identify slow queries and possible abuse from users. Query failures and database failures are also logged, they show deeper information about an error like codes and examples. All logs are stored chronologically in their respect directory.
-
-Example:
-```
-/src/Trestle/logs/
-- database/
-- - 2014-12-28.000.log
-- query/
-- - 2014-12-30.000.log
-- request/
-- - 2014-12-28.000.log
-- - 2014-12-29.000.log
-- - 2014-12-30.000.log
 ```

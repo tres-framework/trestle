@@ -27,10 +27,4 @@ return [
             'password'  => ''
         ],
     ],
-    
-    'logs' => [
-        'dir' => [
-            'path'        => __DIR__.'/../logs',
-        ],
-    ],
 ];
