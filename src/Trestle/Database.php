@@ -31,7 +31,6 @@ namespace Trestle {
     use Trestle\Process;
     use Trestle\TrestleException;
     use Trestle\DatabaseException;
-    use Trestle\Log;
 
     /**
      *-------------------------------------------------------------------------
@@ -72,12 +71,6 @@ namespace Trestle {
             } else {
                 throw new DatabaseException('Unable to locate "' . $connection . '" config.');
             }
-            
-            Log::init(Config::get('logs'));
-            
-            Log::register('database');
-            Log::register('request');
-            Log::register('query');
             
             $this->_process = new Process();
             $this->_process->connection($this->_config);

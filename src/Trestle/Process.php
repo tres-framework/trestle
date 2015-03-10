@@ -8,7 +8,6 @@ namespace Trestle {
     use Trestle\Stopwatch;
     use Trestle\DatabaseException;
     use Trestle\QueryException;
-    use Trestle\Log;
     
     /*
     |--------------------------------------------------------------------------
@@ -65,25 +64,16 @@ namespace Trestle {
                 $this->_connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
                 $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 
-                Log::database("Connection started for \"{$this->_activeDB}\" database.");
-                
                 return $this->_connection;
+                
             } catch(PDOException $e) {
-                $error  = "Connection failed for \"{$this->_activeDB}\" database.";
-                
-                $msg  = $error.PHP_EOL;
-                $msg .= "|-> " . $e->getMessage();
-                
-                Log::database($msg);
                 
                 if(Config::get('throw/database')) {
-                    $errorDetails = $e->getMessage();
-                } else {
-                    $errorDetails = "Please check your database configuration and the logs for more information.";
+                    throw new DatabaseException("Connection failed for \"{$this->_activeDB}\" database.");
                 }
                 
-                throw new DatabaseException($error . ' ' . $errorDetails);
             }
+            
         }
         
         /**
@@ -102,28 +92,23 @@ namespace Trestle {
             try {
                 Stopwatch::start('request');
                 
-                $this->_debug = $debug;
+                $this->_debug    = $debug;
                 $this->statement = $this->_connection->prepare($statement);
                 
-                $i = 1;
-                
-                if(count($binds)) {
-                    foreach($binds as $key => $bind) {
-                        if(is_int($bind)) {
-                            $param = PDO::PARAM_INT;
-                        } elseif(is_bool($bind)) {
-                            $param = PDO::PARAM_BOOL;
-                        } elseif(is_null($bind)) {
-                            $param = PDO::PARAM_NULL;
-                        } elseif(is_string($bind)) {
-                            $param = PDO::PARAM_STR;
-                        } else {
-                            $param = null;
-                        }
-                        
-                        $this->statement->bindValue($key, $bind, $param);
-                        $i++;
+                foreach($binds as $key => $bind) {
+                    if(is_int($bind)) {
+                        $param = PDO::PARAM_INT;
+                    } elseif(is_bool($bind)) {
+                        $param = PDO::PARAM_BOOL;
+                    } elseif(is_null($bind)) {
+                        $param = PDO::PARAM_NULL;
+                    } elseif(is_string($bind)) {
+                        $param = PDO::PARAM_STR;
+                    } else {
+                        $param = null;
                     }
+                    
+                    $this->statement->bindValue($key, $bind, $param);
                 }
                 
                 if($this->statement->execute()){
@@ -132,29 +117,17 @@ namespace Trestle {
                     $this->status = false;
                 }
                 
-                $this->_debug['execution']['request'] = Stopwatch::stop('request');
-                $this->_debug['execution']['total'] = Stopwatch::stop('total');
-                
-                $msg  = "Query Request".PHP_EOL;
-                $msg .= "|-> ".$this->_debug['query'].PHP_EOL;
-                $msg .= "|-> Query executed in {$this->_debug['execution']['total']} seconds.".PHP_EOL;
-                $msg .= "|-> Called in {$this->_debug['called']['file']} on line {$this->_debug['called']['line']}".PHP_EOL;
-                $msg .-" |-> {$this->_debug['query']}";
-                
-                Log::request($msg);
             } catch(PDOException $e) {
                 $this->_debug['error'] = $e->getMessage();
-                
-                $msg  = "Query failed!".PHP_EOL;
-                $msg .= "|-> " . $this->_debug['query'].PHP_EOL;
-                $msg .= "|-> " . $this->_debug['error'].PHP_EOL;
-                
-                Log::query($msg);
                 
                 if(Config::get('throw/query')) {
                     throw new QueryException($this->_debug['error']);
                 }
+                
             }
+            
+            $this->_debug['execution']['request'] = Stopwatch::stop('request');
+            $this->_debug['execution']['total']   = Stopwatch::stop('total');
             
             return $this;
         }
@@ -212,19 +185,7 @@ namespace Trestle {
          * @return void
          */
         public function disconnect() {
-            try {
-                $this->_connection = null;
-                Log::database("Connection ended for \"{$this->_activeDB}\" database.");
-            } catch(PDOException $e) {
-                $msg  = "Connection failure for \"{$this->_activeDB}\" database, unable to disconnect.".PHP_EOL;
-                $msg .= "|-> " . $e->getMessage().PHP_EOL;
-                
-                Log::database($msg);
-                
-                if(Config::get('throw/database')) {
-                    throw new DatabaseException($msg);
-                }
-            }
+            $this->_connection = null;
         }
     }
 }
