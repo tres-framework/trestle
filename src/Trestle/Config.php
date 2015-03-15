@@ -23,7 +23,6 @@ namespace Trestle {
          * @var private
          */
         private static $_config = [
-            'display_errors' => false,
             'validation'     => true,
         ];
 
@@ -41,7 +40,9 @@ namespace Trestle {
         ];
 
         /**
-         * Sets the config.
+         * Sets configs into the $_config array and if validation is true checks 
+         * to see if a connection block has the required parameters with 
+         * _validate().
          *
          * @param  array $config The complete configuration.
          */
@@ -56,26 +57,25 @@ namespace Trestle {
 
             self::$_config = array_merge(self::$_config, $config);
 
-            // Should we validate the connection?
-            // This is recommended.
             if(self::$_config['validation'] === true) {
-                // Make sure each connection is valid.
                 foreach($config['connections'] as $name => $connection) {
-                    self::validate($name, $connection);
+                    self::_validate($name, $connection);
                 }
             }
         }
 
         /**
-         * Gets the config.
+         * Returns the entire config array unless a specific config item is 
+         * requested.
          * 
-         * @param  string $item Get a specific key from the config.
-         * @return mixed  
+         * @param  string       $item Get a specific key from the config.
+         * @return array|string 
          */
         public static function get($item = null) {
             if(isset($item)) {
                 $keys = explode('/', $item);
                 $config = self::$_config;
+                
                 foreach($keys as $key => $value) {
                     if(isset($config[$value])) {
                         $config = $config[$value];
@@ -90,19 +90,21 @@ namespace Trestle {
         }
 
         /**
-         * Validates a configuration option.
-         *
+         * Validates a configuration block by comparing it to the class variable 
+         * $_parameters. This block does not validate that a connection will work, 
+         * just that it has the proper parameters to attempt a connection.
+         * 
          * @param  string $name       Name of the connection.
-         * @param  array  $connection Array of connection.
+         * @param  array  $connection An array of connection.
          */
-        private static function validate($name, $connection) { // TODO: Improve DocBlock.
+        private static function _validate($name, $connection) {
             $difference = array_diff(self::$_parameters, array_keys($connection));
 
             if(count($difference) == 2) {
                 $difference = implode(' & ', $difference);
             } elseif(count($difference) > 2) {
-                $last_diff = array_pop($difference);
-                $difference = implode(', ', $difference) . ' & ' . $last_diff;
+                $lastDiff = array_pop($difference);
+                $difference = implode(', ', $difference) . ' & ' . $lastDiff;
             } else {
                 $difference = implode(', ', $difference);
             }

@@ -1,2 +1,3 @@
-/tests/config.php
+/src/Trestle/logs/
 /tests/logs/
+/testing/
