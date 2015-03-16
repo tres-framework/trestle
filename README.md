@@ -1,21 +1,22 @@
-Trestle
-===========
+# Trestle
 
 *Note that Trestle is in development, it's usable but lacks some features.*
 
-<b>Tres</b>tle is an objected oriented PHP 5.4+ PDO database wrapper that is designed to handle multiple database connections with different database types.
+Trestle is an objected-oriented database wrapper for the PHP programming language.
+It's designed to handle multiple database connections with different kinds of database drivers.
+The beauty of Trestle is that it uses the same syntax for all database drivers.
 
-This is an independent database package that is being worked on for the [Tres Framework](https://github.com/tres-framework). It can be used without the main framework.
+This is the security package used for [Tres Framework](https://github.com/tres-framework/Tres). 
+This is a stand-alone package, which means that it can also be used without the framework.
 
 ## Requirements
-- PHP 5.4 +
+- PHP 5.4+
 
-## Supported DB Types
+## Supported drivers
 - MySQL
 
 ## Supported DB Features
-### MySql
-- Raw Query
+### MySQL
 - SELECT
 - UPDATE
 - INSERT (create)
@@ -33,6 +34,9 @@ This is an independent database package that is being worked on for the [Tres Fr
     - INNER JOIN
     - LEFT JOIN
     - RIGHT JOIN
+
+And of course you can use raw queries. But note that its syntax depends on the 
+driver you're using.
 
 ## Examples
 ### Basic Usage
@@ -76,34 +80,34 @@ Trestle\Config::set([
     ],
 ]);
 
-// Select database connection
+// The database connection to use.
 $db = new Trestle\Database('connection_name_1');
 
-// Run a query
-$query = $db->query(...)
+// Perform a raw query against the database
+$sql = 'SELECT `username`,
+               `firstname`,
+               `email`
+        FROM `users`
+        WHERE `id` = ?
+';
+$bindings = [1];
+$query = $db->query($sql, $bindings)
             ->exec();
 
-// Return results
-echo '<pre>'; print_r($query->result()); echo '</pre>';
+// Get results
+$query->result()
 
-// Count results
-echo '<pre>'; print_r($query->count()); echo '</pre>';
+// Get row count
+$query->count()
 
-// Debug results
-echo '<pre>'; print_r($query->debug()); echo '</pre>';
+// Get debug information
+$query->debug()
 
 // Return true/false query success
-echo '<pre>'; print_r($query->status()); echo '</pre>';
+$query->status()
 ```
 
-### Raw Query
-```php
-// SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
-$query = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])
-            ->exec();
-```
-
-### read
+### Getting data
 ```php
 // SELECT `username`, `firstname`, `email` FROM `users`
 $query = $db->read('users', ['username', 'firstname', 'email'])
@@ -153,7 +157,7 @@ $posts = $db->read('posts', ['id', 'title'])
             ->exec();
 ```
 
-### Update
+### Updating data
 ```php
 // UPDATE `users` SET `username` = ?, `email` = ?, `firstname` = ? WHERE `id` = ?
 $query = $db->update('users', [
@@ -166,7 +170,7 @@ $query = $db->update('users', [
             ->exec();
 ```
 
-### Create
+### Creating data
 ```php
 // INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?);
 $query = $db->create('users', [
@@ -181,7 +185,7 @@ $query = $db->create('users', [
             ->exec();
 ```
 
-### Delete
+### Deleting data
 ```php
 // DELETE FROM `users` WHERE `id` = ?
 $delete = $db->delete('users')
@@ -207,19 +211,15 @@ $query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title
             ->on('articles.author', '=', 'users.id')
             ->exec();
 ```
-Returns
+translates to the following (MySQL) syntax:
 ```sql
-SELECT 
-    `users`.`id`, 
-    `users`.`username`, 
-    `articles`.`id`, 
-    `articles`.`title` 
-FROM 
-    `articles` 
-JOIN 
-    `users` 
-ON 
-    `articles`.`author` = `users`.`id`
+SELECT `users`.`id`, 
+       `users`.`username`, 
+       `articles`.`id`, 
+       `articles`.`title` 
+FROM `articles` 
+JOIN `users` 
+ON `articles`.`author` = `users`.`id`
 ```
 
 #### MULTI JOIN ON
@@ -263,12 +263,4 @@ $foobar->result();
 $foobar->count();
 // Get status of query success (boolean)
 $foobar->status();
-```
-
-## Debug
-```php
-$foobar = $db->query('...')
-             ->exec();
-// Full debug
-$foobar->debug();
 ```
