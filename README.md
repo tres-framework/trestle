@@ -17,7 +17,7 @@ This is a stand-alone package, which means that it can also be used without the 
 
 ## Supported DB Features
 ### MySQL
-- SELECT
+- SELECT (read)
 - UPDATE
 - INSERT (create)
 - DELETE
@@ -34,6 +34,9 @@ This is a stand-alone package, which means that it can also be used without the 
     - INNER JOIN
     - LEFT JOIN
     - RIGHT JOIN
+- ON
+    - AND (andOn)
+    - OR (orOn)
 
 And of course you can use raw queries. But note that its syntax depends on the 
 driver you're using.
