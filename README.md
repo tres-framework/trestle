@@ -1,22 +1,23 @@
-Trestle
-===========
+# Trestle
 
 *Note that Trestle is in development, it's usable but lacks some features.*
 
-<b>Tres</b>tle is an objected oriented PHP 5.4+ PDO database wrapper that is designed to handle multiple database connections with different database types.
+Trestle is an objected-oriented database wrapper for the PHP programming language.
+It's designed to handle multiple database connections with different kinds of database drivers.
+The beauty of Trestle is that it uses the same syntax for all database drivers.
 
-This is an independent database package that is being worked on for the [Tres Framework](https://github.com/tres-framework). It can be used without the main framework.
+This is the database package used for [Tres Framework](https://github.com/tres-framework/Tres). 
+This is a stand-alone package, which means that it can also be used without the framework.
 
 ## Requirements
-- PHP 5.4 +
+- PHP 5.4+
 
-## Supported DB Types
+## Supported drivers
 - MySQL
 
 ## Supported DB Features
-### MySql
-- Raw Query
-- SELECT
+### MySQL
+- SELECT (read)
 - UPDATE
 - INSERT (create)
 - DELETE
@@ -33,25 +34,44 @@ This is an independent database package that is being worked on for the [Tres Fr
     - INNER JOIN
     - LEFT JOIN
     - RIGHT JOIN
+- ON
+    - AND (andOn)
+    - OR (orOn)
 
-## Examples
-### Basic Usage
+And of course you can use raw queries. But note that its syntax depends on the 
+driver you're using.
+
+## Basic Usage
+### Autoload files
+Autoload all Trestle files however you wish. Here is some code to get you started:
 ```php
-// Include your custom autoload
-require_once('includes/autoload.php');
-
-// Catch any exceptions
-set_exception_handler(function($e) {
-    echo '<b>' . get_class($e) . ':</b> ' . $e->getMessage();
+spl_autoload_register(function($class){
+    $dirs = [
+        dirname(__DIR__).'/Trestle/',
+        // ...
+    ];
+    
+    foreach($dirs as $dir){
+        $file = str_replace('\\', '/', rtrim($dir, '/').'/'.$class.'.php');
+        
+        if(is_readable($file)){
+            require_once($file);
+            break;
+        }
+    }
 });
+```
 
-// Load configs directly into method
+### Configuring Trestle
+```php
 Trestle\Config::set([
+    // The kind of exceptions to throw.
     'throw' => [
         'database' => true,
         'query'    => true,
     ],
     
+    // The default connection if none has been provided.
     'default' => 'connecton_name_1',
     
     'connections' => [
@@ -75,73 +95,86 @@ Trestle\Config::set([
         ],
     ],
 ]);
-
-// Select database connection
-$db = new Trestle\Database('connection_name_1');
-
-// Run a query
-$query = $db->query(...)
-            ->exec();
-
-// Return results
-echo '<pre>'; print_r($query->result()); echo '</pre>';
-
-// Count results
-echo '<pre>'; print_r($query->count()); echo '</pre>';
-
-// Debug results
-echo '<pre>'; print_r($query->debug()); echo '</pre>';
-
-// Return true/false query success
-echo '<pre>'; print_r($query->status()); echo '</pre>';
 ```
 
-### Raw Query
+### Starting a new database connection.
 ```php
-// SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
-$query = $db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])
+// Uses the default database connection from the config.
+$db = new Trestle\Database(); // "connection_name_1"
+```
+
+```php
+$db = new Trestle\Database('connection_name_1');
+```
+
+```php
+$db = new Trestle\Database('connection_name_2');
+```
+
+### Querying
+#### Raw queries
+Sometimes it's just not possible to use the fluent interface. In that case,
+you can fall back to using raw queries. But note that the syntax will depend on
+the database driver you're using.
+```php
+$sql = 'SELECT `username`,
+               `firstname`,
+               `email`
+        FROM `users`
+        WHERE `id` = :id
+';
+$bindings = [
+    'id' => 1
+];
+$query = $db->query($sql, $bindings)
             ->exec();
 ```
 
-### read
+#### Getting data
 ```php
 // SELECT `username`, `firstname`, `email` FROM `users`
 $query = $db->read('users', ['username', 'firstname', 'email'])
             ->exec();
+```
 
-
+```php
 // SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
 $query = $db->read('users', ['username', 'firstname', 'email'])
             ->where('id', '=', 1)
             ->exec();
+```
 
-            
+```php        
 // SELECT * FROM `users` ORDER BY ? ASC LIMIT ?, ?
 $query = $db->read('users')
             ->order('id', 'ASC')
             ->offset(0)
             ->limit(5)
             ->exec();
+```
 
-            
+```php
 // SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
 $query = $db->read('users')
-			->where('id', 'BETWEEN', [1, 9])
-			->exec();
+            ->where('id', 'BETWEEN', [1, 9])
+            ->exec();
+```
 
-            
+```php
 // SELECT * FROM `users` WHERE `id` NOT BETWEEN ? AND ?
 $query = $db->read('users')
-			->where('id', 'NOT BETWEEN', [1, 9])
-			->exec();
+            ->where('id', 'NOT BETWEEN', [1, 9])
+            ->exec();
+```
 
-
+```php
 // SELECT * FROM `users` WHERE `id` LIKE ?
 $posts = $db->read('posts')
             ->where('title', 'LIKE', 'foobar')
             ->exec();
+```
 
-            
+```php
 // SELECT `id`, `title` FROM `posts` WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC LIMIT ?, ?
 $posts = $db->read('posts', ['id', 'title'])
             ->where('date', '>', '2014-11-20')
@@ -153,7 +186,60 @@ $posts = $db->read('posts', ['id', 'title'])
             ->exec();
 ```
 
-### Update
+##### JOINS
+```php
+// The following queries return the same results
+// SELECT `users`.`id`, `users`.`username`, `articles`.`id`, `articles`.`title` FROM `users`, `articles`
+$query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
+            ->exec();
+
+$query = $db->read(['users', 'articles'], ['users.id', 'users.username', 'articles.id', 'articles.title'])
+            ->exec();
+```
+
+###### JOIN ON
+```php
+$query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
+            ->join('users')
+            ->on('articles.author', '=', 'users.id')
+            ->exec();
+```
+In MySQL, above code gets translated to the following:
+```sql
+SELECT `users`.`id`, 
+       `users`.`username`, 
+       `articles`.`id`, 
+       `articles`.`title` 
+FROM `articles` 
+JOIN `users` 
+ON `articles`.`author` = `users`.`id`
+```
+
+###### MULTI JOIN ON
+```php
+$query = $db->read(['articles.id', 'articles.title', 'users.username', 'categories.name'])
+            ->leftJoin('users')
+            ->on('articles.author', '=', 'users.id')
+            ->leftJoin('categories')
+            ->on('articles.category', '=', 'categories.id')
+            ->order('articles.id')
+            ->exec();
+```
+In MySQL, above code gets translated to the following:
+```sql
+SELECT `articles`.`id`, 
+       `articles`.`title`, 
+       `users`.`username`, 
+       `categories`.`name` 
+FROM `articles` 
+LEFT JOIN `users` 
+ON `articles`.`author` = `users`.`id` 
+LEFT JOIN `categories` 
+ON `articles`.`category` = `categories`.`id`
+ORDER BY `articles`.`id`
+```
+
+#### Updating data
 ```php
 // UPDATE `users` SET `username` = ?, `email` = ?, `firstname` = ? WHERE `id` = ?
 $query = $db->update('users', [
@@ -166,7 +252,7 @@ $query = $db->update('users', [
             ->exec();
 ```
 
-### Create
+#### Creating data
 ```php
 // INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?);
 $query = $db->create('users', [
@@ -181,7 +267,7 @@ $query = $db->create('users', [
             ->exec();
 ```
 
-### Delete
+#### Deleting data
 ```php
 // DELETE FROM `users` WHERE `id` = ?
 $delete = $db->delete('users')
@@ -189,86 +275,28 @@ $delete = $db->delete('users')
              ->exec();
 ```
 
-### JOINS
+### Getting results
+#### Getting the first result
 ```php
-// The following queries return the same results
-// SELECT `users`.`id`, `users`.`username`, `articles`.`id`, `articles`.`title` FROM `users`, `articles`
-$query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
-            ->exec();
-
-$query = $db->read(['users', 'articles'], ['users.id', 'users.username', 'articles.id', 'articles.title'])
-            ->exec();
+$query->result()
 ```
-
-#### JOIN ON
+#### Getting all of the results
 ```php
-$query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
-            ->join('users')
-            ->on('articles.author', '=', 'users.id')
-            ->exec();
-```
-Returns
-```sql
-SELECT 
-    `users`.`id`, 
-    `users`.`username`, 
-    `articles`.`id`, 
-    `articles`.`title` 
-FROM 
-    `articles` 
-JOIN 
-    `users` 
-ON 
-    `articles`.`author` = `users`.`id`
+$query->results()
 ```
 
-#### MULTI JOIN ON
+#### Getting the row count
 ```php
-$query = $db->read(['articles.id', 'articles.title', 'users.username', 'categories.name'])
-            ->leftJoin('users')
-            ->on('articles.author', '=', 'users.id')
-            ->leftJoin('categories')
-            ->on('articles.category', '=', 'categories.id')
-            ->order('articles.id')
-            ->exec();
-```
-Returns
-```sql
-SELECT 
-    `articles`.`id`, 
-    `articles`.`title`, 
-    `users`.`username`, 
-    `categories`.`name` 
-FROM 
-    `articles` 
-LEFT JOIN 
-    `users` 
-ON 
-    `articles`.`author` = `users`.`id` 
-LEFT JOIN 
-    `categories` 
-ON 
-    `articles`.`category` = `categories`.`id`
+$query->count()
 ```
 
-## Using the retuned data
+#### Getting debug information
 ```php
-$foobar = $db->query('...')
-             ->exec();
-// Get all
-$foobar->results();
-// Get first
-$foobar->result();
-// Get count
-$foobar->count();
-// Get status of query success (boolean)
-$foobar->status();
+$query->debug()
 ```
 
-## Debug
+#### Getting the query status
+Shows whether the query executed successfully (true) or not (false).
 ```php
-$foobar = $db->query('...')
-             ->exec();
-// Full debug
-$foobar->debug();
+$query->status()
 ```
