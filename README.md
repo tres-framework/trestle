@@ -62,7 +62,7 @@ spl_autoload_register(function($class){
 ### Configuring Trestle
 ```php
 Trestle\Config::set([
-    // What kind of exceptions to throw
+    // The kind of exceptions to throw.
     'throw' => [
         'database' => true,
         'query'    => true,
@@ -96,7 +96,16 @@ Trestle\Config::set([
 
 ### Starting a new database connection.
 ```php
+// Uses the default database connection from the config.
+$db = new Trestle\Database(); // "connection_name_1"
+```
+
+```php
 $db = new Trestle\Database('connection_name_1');
+```
+
+```php
+$db = new Trestle\Database('connection_name_2');
 ```
 
 ### Querying
