@@ -201,7 +201,7 @@ $query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title
             ->on('articles.author', '=', 'users.id')
             ->exec();
 ```
-translates to the following (MySQL) syntax:
+In MySQL, above code gets translated to the following:
 ```sql
 SELECT `users`.`id`, 
        `users`.`username`, 
