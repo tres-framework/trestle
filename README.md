@@ -6,7 +6,7 @@ Trestle is an objected-oriented database wrapper for the PHP programming languag
 It's designed to handle multiple database connections with different kinds of database drivers.
 The beauty of Trestle is that it uses the same syntax for all database drivers.
 
-This is the security package used for [Tres Framework](https://github.com/tres-framework/Tres). 
+This is the database package used for [Tres Framework](https://github.com/tres-framework/Tres). 
 This is a stand-alone package, which means that it can also be used without the framework.
 
 ## Requirements
