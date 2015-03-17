@@ -39,6 +39,26 @@ And of course you can use raw queries. But note that its syntax depends on the
 driver you're using.
 
 ## Basic Usage
+### Autoload files
+Autoload all Trestle files however you wish. Here is some code to get you started:
+```php
+spl_autoload_register(function($class){
+    $dirs = [
+        dirname(__DIR__).'/Trestle/',
+        // ...
+    ];
+    
+    foreach($dirs as $dir){
+        $file = str_replace('\\', '/', rtrim($dir, '/').'/'.$class.'.php');
+        
+        if(is_readable($file)){
+            require_once($file);
+            break;
+        }
+    }
+});
+```
+
 ### Configuring Trestle
 ```php
 Trestle\Config::set([
