@@ -38,24 +38,17 @@ This is a stand-alone package, which means that it can also be used without the 
 And of course you can use raw queries. But note that its syntax depends on the 
 driver you're using.
 
-## Examples
-### Basic Usage
+## Basic Usage
+### Configuring Trestle
 ```php
-// Include your custom autoload
-require_once('includes/autoload.php');
-
-// Catch any exceptions
-set_exception_handler(function($e) {
-    echo '<b>' . get_class($e) . ':</b> ' . $e->getMessage();
-});
-
-// Load configs directly into method
 Trestle\Config::set([
+    // What kind of exceptions to throw
     'throw' => [
         'database' => true,
         'query'    => true,
     ],
     
+    // The default connection if none has been provided.
     'default' => 'connecton_name_1',
     
     'connections' => [
@@ -79,73 +72,77 @@ Trestle\Config::set([
         ],
     ],
 ]);
+```
 
-// The database connection to use.
+### Starting a new database connection.
+```php
 $db = new Trestle\Database('connection_name_1');
+```
 
-// Perform a raw query against the database
+### Querying
+#### Raw queries
+Sometimes it's just not possible to use the fluent interface. In that case,
+you can fall back to using raw queries. But note that the syntax will depend on
+the database driver you're using.
+```php
 $sql = 'SELECT `username`,
                `firstname`,
                `email`
         FROM `users`
-        WHERE `id` = ?
+        WHERE `id` = :id
 ';
-$bindings = [1];
+$bindings = [
+    'id' => 1
+];
 $query = $db->query($sql, $bindings)
             ->exec();
-
-// Get results
-$query->result()
-
-// Get row count
-$query->count()
-
-// Get debug information
-$query->debug()
-
-// Return true/false query success
-$query->status()
 ```
 
-### Getting data
+#### Getting data
 ```php
 // SELECT `username`, `firstname`, `email` FROM `users`
 $query = $db->read('users', ['username', 'firstname', 'email'])
             ->exec();
+```
 
-
+```php
 // SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?
 $query = $db->read('users', ['username', 'firstname', 'email'])
             ->where('id', '=', 1)
             ->exec();
+```
 
-            
+```php        
 // SELECT * FROM `users` ORDER BY ? ASC LIMIT ?, ?
 $query = $db->read('users')
             ->order('id', 'ASC')
             ->offset(0)
             ->limit(5)
             ->exec();
+```
 
-            
+```php
 // SELECT * FROM `users` WHERE `id` BETWEEN ? AND ?
 $query = $db->read('users')
-			->where('id', 'BETWEEN', [1, 9])
-			->exec();
+            ->where('id', 'BETWEEN', [1, 9])
+            ->exec();
+```
 
-            
+```php
 // SELECT * FROM `users` WHERE `id` NOT BETWEEN ? AND ?
 $query = $db->read('users')
-			->where('id', 'NOT BETWEEN', [1, 9])
-			->exec();
+            ->where('id', 'NOT BETWEEN', [1, 9])
+            ->exec();
+```
 
-
+```php
 // SELECT * FROM `users` WHERE `id` LIKE ?
 $posts = $db->read('posts')
             ->where('title', 'LIKE', 'foobar')
             ->exec();
+```
 
-            
+```php
 // SELECT `id`, `title` FROM `posts` WHERE `date` > ? AND `id` BETWEEN ? AND ? AND `author` LIKE ? ORDER BY ? ASC LIMIT ?, ?
 $posts = $db->read('posts', ['id', 'title'])
             ->where('date', '>', '2014-11-20')
@@ -157,43 +154,7 @@ $posts = $db->read('posts', ['id', 'title'])
             ->exec();
 ```
 
-### Updating data
-```php
-// UPDATE `users` SET `username` = ?, `email` = ?, `firstname` = ? WHERE `id` = ?
-$query = $db->update('users', [
-                'username'  => 'bar',
-                'email'     => 'bar@foo.tld',
-                'firstname' => 'bar',
-                'lastname'  => 'foo'
-            ])
-            ->where('id', '=', 3)
-            ->exec();
-```
-
-### Creating data
-```php
-// INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?);
-$query = $db->create('users', [
-                'username' => 'foobar',
-                'email' => 'foo@bar.tld',
-                'password' => 'cleartextwoot',
-                'firstname' => 'Foo',
-                'lastname' => 'Bar',
-                'active' => 0,
-                'permissions' => '{\'admin\': 0}'
-            ])
-            ->exec();
-```
-
-### Deleting data
-```php
-// DELETE FROM `users` WHERE `id` = ?
-$delete = $db->delete('users')
-             ->where('id', '=', 72)
-             ->exec();
-```
-
-### JOINS
+##### JOINS
 ```php
 // The following queries return the same results
 // SELECT `users`.`id`, `users`.`username`, `articles`.`id`, `articles`.`title` FROM `users`, `articles`
@@ -204,7 +165,7 @@ $query = $db->read(['users', 'articles'], ['users.id', 'users.username', 'articl
             ->exec();
 ```
 
-#### JOIN ON
+###### JOIN ON
 ```php
 $query = $db->read(['users.id', 'users.username', 'articles.id', 'articles.title'])
             ->join('users')
@@ -222,7 +183,7 @@ JOIN `users`
 ON `articles`.`author` = `users`.`id`
 ```
 
-#### MULTI JOIN ON
+###### MULTI JOIN ON
 ```php
 $query = $db->read(['articles.id', 'articles.title', 'users.username', 'categories.name'])
             ->leftJoin('users')
@@ -232,35 +193,78 @@ $query = $db->read(['articles.id', 'articles.title', 'users.username', 'categori
             ->order('articles.id')
             ->exec();
 ```
-Returns
+In MySQL, above code gets translated to the following:
 ```sql
-SELECT 
-    `articles`.`id`, 
-    `articles`.`title`, 
-    `users`.`username`, 
-    `categories`.`name` 
-FROM 
-    `articles` 
-LEFT JOIN 
-    `users` 
-ON 
-    `articles`.`author` = `users`.`id` 
-LEFT JOIN 
-    `categories` 
-ON 
-    `articles`.`category` = `categories`.`id`
+SELECT `articles`.`id`, 
+       `articles`.`title`, 
+       `users`.`username`, 
+       `categories`.`name` 
+FROM `articles` 
+LEFT JOIN `users` 
+ON `articles`.`author` = `users`.`id` 
+LEFT JOIN `categories` 
+ON `articles`.`category` = `categories`.`id`
+ORDER BY `articles`.`id`
 ```
 
-## Using the retuned data
+#### Updating data
 ```php
-$foobar = $db->query('...')
+// UPDATE `users` SET `username` = ?, `email` = ?, `firstname` = ? WHERE `id` = ?
+$query = $db->update('users', [
+                'username'  => 'bar',
+                'email'     => 'bar@foo.tld',
+                'firstname' => 'bar',
+                'lastname'  => 'foo'
+            ])
+            ->where('id', '=', 3)
+            ->exec();
+```
+
+#### Creating data
+```php
+// INSERT INTO `users` (`username`, `email`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?);
+$query = $db->create('users', [
+                'username' => 'foobar',
+                'email' => 'foo@bar.tld',
+                'password' => 'cleartextwoot',
+                'firstname' => 'Foo',
+                'lastname' => 'Bar',
+                'active' => 0,
+                'permissions' => '{\'admin\': 0}'
+            ])
+            ->exec();
+```
+
+#### Deleting data
+```php
+// DELETE FROM `users` WHERE `id` = ?
+$delete = $db->delete('users')
+             ->where('id', '=', 72)
              ->exec();
-// Get all
-$foobar->results();
-// Get first
-$foobar->result();
-// Get count
-$foobar->count();
-// Get status of query success (boolean)
-$foobar->status();
+```
+
+### Getting results
+#### Getting the first result
+```php
+$query->result()
+```
+#### Getting all of the results
+```php
+$query->results()
+```
+
+#### Getting the row count
+```php
+$query->count()
+```
+
+#### Getting debug information
+```php
+$query->debug()
+```
+
+#### Getting the query status
+Shows whether the query executed successfully (true) or not (false).
+```php
+$query->status()
 ```
