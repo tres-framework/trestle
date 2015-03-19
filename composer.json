@@ -1,0 +1,27 @@
+{
+    "name": "tresframework/trestle",
+    "description": "A database wrapper using fluent interface.",
+    "keywords": [
+        "database",
+        "fluent interface",
+        "MySQL",
+        "SQLite",
+        "MS SQL",
+        "PostgreSQL"
+    ],
+    "homepage": "https://github.com/tres-framework/Trestle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Julian",
+            "email": "julian@tresframework.com",
+            "role": "maintainer"
+        },
+        {
+            "name": "ped zed",
+            "email": "ped@tresframework.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {}
+}
