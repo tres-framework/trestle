@@ -4,7 +4,6 @@ namespace Trestle\blueprints {
 
     use Trestle\Engineer;
     use Trestle\QueryException;
-    use Trestle\Log;
     use Trestle\Process;
 
     /*
