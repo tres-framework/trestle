@@ -77,7 +77,7 @@ namespace Trestle {
          * @return string A valid PDO DSN string.
          */
         private function _generateDSN($config) {
-            $dsnPattern = dirname(__FILE__) . '/dns/' . $config['driver'] . '.dsn';
+            $dsnPattern = dirname(__FILE__) . '/dsn/' . $config['driver'] . '.dsn';
             if(!is_readable($dsnPattern)) {
                 throw new DatabaseException('Missing DSN pattern or is not readable for a ' . $config['driver'] . ' connection.');
             }
