@@ -1,0 +1,1 @@
+mysql:host={~host};dbname={~database};{~port};{~charset};

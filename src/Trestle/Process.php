@@ -48,17 +48,12 @@ namespace Trestle {
          */
         public function connection($config) {
             $this->_activeDB = $config['database'];
-            $driver = strtolower($config['driver']);
             
             try {
                 $this->_connection = new PDO(
-                    $driver.':'.
-                    'host='.$config['host'].';'.
-                    'dbname='.$config['database'].';'.
-                    (isset($config['port']) ? $config['port'].';' : '').
-                    (isset($config['charset']) ? $config['charset'].';' : ''),
-                    $config['username'],
-                    $config['password']
+                    $this->_generateDSN($config),
+                    (isset($config['username']) ? $config['username'] : null),
+                    (isset($config['password']) ? $config['password'] : null)
                 );
                 
                 $this->_connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
@@ -67,13 +62,39 @@ namespace Trestle {
                 return $this->_connection;
                 
             } catch(PDOException $e) {
-                
                 if(Config::get('throw/database')) {
                     throw new DatabaseException("Connection failed for \"{$this->_activeDB}\" database.");
                 }
                 
             }
             
+        }
+        
+        /**
+         * Generates a DSN string for a PDO connection.
+         *
+         * @param  array  $config Config values for DSN string.
+         * @return string A valid PDO DSN string.
+         */
+        private function _generateDSN($config) {
+            $dsnPattern = dirname(__FILE__) . '/dns/' . $config['driver'] . '.dsn';
+            if(!is_readable($dsnPattern)) {
+                throw new DatabaseException('Missing DSN pattern or is not readable for a ' . $config['driver'] . ' connection.');
+            }
+            $parse = file_get_contents($dsnPattern);
+            
+            return rtrim(
+                str_replace(
+                    array_map(
+                        function($value) {
+                            return '{~' . $value . '}';
+                        }, 
+                        array_keys($config)
+                    ), 
+                    array_values($config), 
+                    $parse
+                )
+            );
         }
         
         /**
