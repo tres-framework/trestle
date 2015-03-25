@@ -26,5 +26,13 @@ return [
             'username'  => 'root',
             'password'  => ''
         ],
+        'SQLite1' => [
+            'driver'    => 'SQLite',
+            'database'  => dirname(__FILE__) . '/trestle_1.sqlite',
+        ],
+        'SQLite2' => [
+            'driver'    => 'SQLite',
+            'database'  => dirname(__FILE__) . '/trestle_2.sqlite',
+        ],
     ],
 ];
