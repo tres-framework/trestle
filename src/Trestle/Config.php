@@ -32,11 +32,17 @@ namespace Trestle {
          * @var private
          */
         private static $_parameters = [
-            'driver',
-            'database',
-            'host',
-            'username',
-            'password',
+            'MySQL' => [
+                'driver',
+                'database',
+                'host',
+                'username',
+                'password'
+            ],
+            'SQLite' => [
+                'driver',
+                'database'
+            ],
         ];
 
         /**
@@ -98,7 +104,10 @@ namespace Trestle {
          * @param  array  $connection An array of connection.
          */
         private static function _validate($name, $connection) {
-            $difference = array_diff(self::$_parameters, array_keys($connection));
+            if(!isset($connection['driver'])) {
+                throw new ConfigException('Missing driver for "' . $name . '" connection.');
+            }
+            $difference = array_diff(self::$_parameters[$connection['driver']], array_keys($connection));
 
             if(count($difference) == 2) {
                 $difference = implode(' & ', $difference);
@@ -110,9 +119,7 @@ namespace Trestle {
             }
 
             if(!empty($difference)) {
-                throw new ConfigException(
-                    'Missing required parameter(s) ' . $difference . ' from the "' . $name . '" connection.'
-                );
+                throw new ConfigException('Missing required parameter(s) ' . $difference . ' from the "' . $name . '" connection.');
             }
         }
 
