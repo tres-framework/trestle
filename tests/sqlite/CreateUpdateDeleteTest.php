@@ -9,8 +9,6 @@ class SQLiteCreateUpdateDeleteTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testCreate() {
-        $db = new Trestle\Database('SQLite1');
-
         $expects['query'] = 'INSERT INTO `users` (`id`, `username`, `email`, `password`, `firstname`, `lastname`, `active`, `permissions`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
         $expects['binds'] = [
             1 => 1337,
@@ -40,8 +38,6 @@ class SQLiteCreateUpdateDeleteTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testUpdate() {
-        $db = new Trestle\Database('SQLite1');
-
         $expects['query'] = 'UPDATE `users` SET `username` = ?, `email` = ?, `firstname` = ?, `lastname` = ? WHERE `id` = ?';
         $expects['binds'] = [
             1 => 'bar',
@@ -64,8 +60,6 @@ class SQLiteCreateUpdateDeleteTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testDelete() {
-        $db = new Trestle\Database('SQLite1');
-
         $expects['query'] = 'DELETE FROM `users` WHERE `id` = ?';
         $expects['binds'] = [1 => 1337];
         $query            = $this->db->delete('users')

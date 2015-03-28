@@ -6,8 +6,6 @@ class SQLiteQueryTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testQuery() {
-        $db = new Trestle\Database('SQLite1');
-
         $expects['query'] = 'SELECT * FROM `users`';
         $expects['binds'] = [];
         $query            = $this->db->query('SELECT * FROM `users`')
@@ -18,8 +16,6 @@ class SQLiteQueryTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testQueryBind() {
-        $db = new Trestle\Database('SQLite1');
-
         $expects['query'] = 'SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?';
         $expects['binds'] = [1 => 1];
         $query            = $this->db->query('SELECT `username`, `firstname`, `email` FROM `users` WHERE `id` = ?', [1])
