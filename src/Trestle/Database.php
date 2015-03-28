@@ -101,7 +101,7 @@ namespace Trestle {
             } elseif($method == 'disconnect') {
                 $this->_process->disconnect();
             } else {
-                throw new DatabaseException('Trestle was unable to recognize your database call.');
+                throw new DatabaseException('Trestle was unable to recognize your database call "' . $method . '()".');
             }
         }
 
