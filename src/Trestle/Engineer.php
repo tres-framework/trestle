@@ -270,7 +270,13 @@ namespace Trestle {
                 if(in_array(['command', 'operator', 'bind'], $params[$key])) {
                     $contents[$key] = $content;
                 } elseif(in_array('column', $params[$key])) {
-                    $contents[$key] = $this->_generateWrapList($content, $raw, $quote);
+                    if(!is_numeric($key)) {
+                        $contents[$key] = $this->_generateWrapList($key, $raw, $quote) . 
+                                          ' AS ' . 
+                                          $this->_generateWrapList($content, $raw, $quote);
+                    } else {
+                        $contents[$key] = $this->_generateWrapList($content, $raw, $quote);
+                    }
                 } elseif(in_array('bind', $params[$key])) {
                     $contents[$key] = $this->_generateBindList($pattern, $content, $raw, $quote);
                 } elseif(in_array('set', $params[$key])) {
