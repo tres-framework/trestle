@@ -58,6 +58,7 @@ namespace Trestle {
                 
                 $this->_connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
                 $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $this->_connection->setAttribute(PDO::ATTR_TIMEOUT, (isset($config['timeout']) ? $config['timeout'] : 25));
                 
                 return $this->_connection;
                 
