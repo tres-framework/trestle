@@ -1,0 +1,42 @@
+{
+    "name": "tres-framework/trestle",
+    "description": "A database wrapper using fluent interface.",
+    "version": "0.3.0",
+    "keywords": [
+        "php",
+        "database",
+        "fluent interface",
+        "MySQL"
+    ],
+    "homepage": "https://github.com/tres-framework/trestle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Julian Richen",
+            "email": "julian@tresframework.com",
+            "role": "maintainer"
+        },
+        {
+            "name": "ped zed",
+            "email": "ped@tresframework.com",
+            "role": "contributor"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "ext-pdo": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Trestle\\": "src/Trestle"
+        }
+    },
+    "support": {
+        "documentation": "https://github.com/tres-framework/docs",
+        "issues": "https://github.com/tres-framework/trestle/issues",
+        "source": "https://github.com/tres-framework/trestle"
+    }
+}
