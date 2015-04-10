@@ -82,10 +82,13 @@ namespace Trestle {
             if(!is_readable($dsnPattern)) {
                 throw new DatabaseException('Missing DSN pattern or is not readable for a ' . $config['driver'] . ' connection.');
             }
+            
             $parse = file_get_contents($dsnPattern);
             
             return rtrim(
+                // Creates dsn string: mysql:host={~host};dbname={~database};{~port};{~charset};
                 str_replace(
+                    // Replace any instance of "{~value}" with the config value.
                     array_map(
                         function($value) {
                             return '{~' . $value . '}';
