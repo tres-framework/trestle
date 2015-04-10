@@ -166,7 +166,7 @@ Trestle\Config::set([
             | production password in version control.
             | 
             */
-            'password' => 'password'
+            'password' => 'password',
             
             /*
             |------------------------------------------------------------------
