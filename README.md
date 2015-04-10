@@ -94,7 +94,7 @@ Trestle\Config::set([
     | Database connections
     |--------------------------------------------------------------------------
     | 
-    | A list of databases to use.
+    | The available database connections.
     |
     */
     'connections' => [
