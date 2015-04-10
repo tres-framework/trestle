@@ -226,7 +226,7 @@ namespace Trestle {
          * @param  array|string $content    The content to join to the query and format.
          * @return string                   Formatted string.
          */
-        private function _addStructureContentsParamters($pattern, $parameters, $contents) {
+        private function _addStructureContentsParameters($pattern, $parameters, $contents) {
             if(!is_array($contents)) {
                 $contents = [0 => $contents];
             }
@@ -317,7 +317,7 @@ namespace Trestle {
                 if(substr($bit, 0, 1) == '~') {
                     if(isset($this->_structure[$patternBit])) {
                         foreach($this->_structure[$patternBit] as $segment) {
-                            $query .= $this->_addStructureContentsParamters(
+                            $query .= $this->_addStructureContentsParameters(
                                 $patternBit,
                                 $segment['parameters'],
                                 $segment['contents']
