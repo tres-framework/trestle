@@ -98,7 +98,9 @@ Trestle\Config::set([
     |
     */
     'connections' => [
+        
         'main' => [
+            
             /*
             |------------------------------------------------------------------
             | Driver
@@ -120,7 +122,7 @@ Trestle\Config::set([
             | The database to use.
             |
             */
-            'database' => 'snippitz',
+            'database' => 'my_db',
             
             /*
             |------------------------------------------------------------------
@@ -176,6 +178,7 @@ Trestle\Config::set([
             */
             'charset' => 'utf8',
         ],
+        
     ],
     
 ]);
@@ -184,20 +187,20 @@ Trestle\Config::set([
 ### Starting a new database connection.
 ```php
 // Uses the default database connection from the config.
-$db = new Trestle\Database(); // "connection_name_1"
+$db = new Trestle\Database();
 ```
-
+If the default connection is called "main", then above code is basically the same as the following:
 ```php
-$db = new Trestle\Database('connection_name_1');
+$db = new Trestle\Database('main');
 ```
-
+You can have multiple connections open.
 ```php
-$db = new Trestle\Database('connection_name_2');
+$db2 = new Trestle\Database('connection_name_2');
 ```
 
 ### Querying
 #### Raw queries
-Sometimes it's just not possible to use the fluent interface. In that case,
+Sometimes you will notice that the methods provided are just not enough. In that case,
 you can fall back to using raw queries. But note that the syntax will depend on
 the database driver you're using.
 ```php
