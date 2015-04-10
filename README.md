@@ -65,35 +65,119 @@ spl_autoload_register(function($class){
 ### Configuring Trestle
 ```php
 Trestle\Config::set([
-    // The kind of exceptions to throw.
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Exceptions
+    |--------------------------------------------------------------------------
+    | 
+    | The kind of exceptions to throw.
+    |
+    */
     'throw' => [
         'database' => true,
         'query'    => true,
     ],
     
-    // The default connection if none has been provided.
-    'default' => 'connecton_name_1',
+    /*
+    |--------------------------------------------------------------------------
+    | Default database
+    |--------------------------------------------------------------------------
+    | 
+    | The database to use if no database is provided.
+    |
+    */
+    'default' => 'main',
     
+    /*
+    |--------------------------------------------------------------------------
+    | Database connections
+    |--------------------------------------------------------------------------
+    | 
+    | A list of databases to use.
+    |
+    */
     'connections' => [
-        'connection_name_1' => [
-            'driver'    => 'MySQL',
-            'database'  => 'database_name',
-            'host'      => '127.0.0.1',
-            'port'      => '3306',
-            'charset'   => 'utf8',
-            'username'  => 'root',
-            'password'  => 'password'
-        ],
-        'connection_name_2' => [
-            'driver'    => 'MySQL',
-            'database'  => 'database_name_2',
-            'host'      => '127.0.0.1',
-            'port'      => '3306',
-            'charset'   => 'utf8',
-            'username'  => 'root',
-            'password'  => 'password'
+        'main' => [
+            /*
+            |------------------------------------------------------------------
+            | Driver
+            |------------------------------------------------------------------
+            | 
+            | The kind of database driver to use.
+            |
+            | Supported drivers:
+            | - MySQL
+            |
+            */
+            'driver' => 'MySQL',
+            
+            /*
+            |------------------------------------------------------------------
+            | Database
+            |------------------------------------------------------------------
+            | 
+            | The database to use.
+            |
+            */
+            'database' => 'snippitz',
+            
+            /*
+            |------------------------------------------------------------------
+            | Host
+            |------------------------------------------------------------------
+            | 
+            | The database host. Using an IP address is likely to be faster.
+            |
+            */
+            'host' => '127.0.0.1',
+            
+            /*
+            |------------------------------------------------------------------
+            | Port
+            |------------------------------------------------------------------
+            | 
+            | The database port.
+            | 
+            | MySQL default: 3306.
+            |
+            */
+            'port' => '3306',
+            
+            /*
+            |------------------------------------------------------------------
+            | Username
+            |------------------------------------------------------------------
+            | 
+            | This is the database user. It's recommended to limit the user's 
+            | permissions to the minimum application requirement.
+            |
+            */
+            'username' => 'root',
+            
+            /*
+            |------------------------------------------------------------------
+            | Password
+            |------------------------------------------------------------------
+            | 
+            | This is the password for the database. Be sure not to commit a 
+            | production password in version control.
+            | 
+            */
+            'password' => 'password'
+            
+            /*
+            |------------------------------------------------------------------
+            | Charset
+            |------------------------------------------------------------------
+            | 
+            | The character encoding to use.
+            |
+            */
+            'charset' => 'utf8',
         ],
     ],
+    
 ]);
 ```
 
