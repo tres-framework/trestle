@@ -16,7 +16,7 @@ return [
             'charset'   => 'utf8',
             'username'  => 'root',
             'password'  => '',
-            'timeout'   => 5
+            'timeout'   => 5,
         ],
         'MySQL2' => [
             'driver'    => 'MySQL',
@@ -26,17 +26,17 @@ return [
             'charset'   => 'utf8',
             'username'  => 'root',
             'password'  => '',
-            'timeout'   => 5
+            'timeout'   => 5,
         ],
         'SQLite1' => [
             'driver'    => 'SQLite',
             'database'  => dirname(__FILE__) . '/trestle_1.sqlite',
-            'timeout'   => 5
+            'timeout'   => 5,
         ],
         'SQLite2' => [
             'driver'    => 'SQLite',
             'database'  => dirname(__FILE__) . '/trestle_2.sqlite',
-            'timeout'   => 5
+            'timeout'   => 5,
         ],
     ],
 ];

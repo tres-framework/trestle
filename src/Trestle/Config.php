@@ -31,7 +31,7 @@ namespace Trestle {
          *
          * @var private
          */
-        private static $_parameters = [
+        private static $_requiredArguments = [
             'MySQL' => [
                 'driver',
                 'database',
@@ -97,7 +97,7 @@ namespace Trestle {
 
         /**
          * Validates a configuration block by comparing it to the class variable 
-         * $_parameters. This block does not validate that a connection will work, 
+         * $_requiredArguments. This block does not validate that a connection will work, 
          * just that it has the proper parameters to attempt a connection.
          * 
          * @param  string $name       Name of the connection.
@@ -107,7 +107,7 @@ namespace Trestle {
             if(!isset($connection['driver'])) {
                 throw new ConfigException('Missing driver for "' . $name . '" connection.');
             }
-            $difference = array_diff(self::$_parameters[$connection['driver']], array_keys($connection));
+            $difference = array_diff(self::$_requiredArguments[$connection['driver']], array_keys($connection));
 
             if(count($difference) == 2) {
                 $difference = implode(' & ', $difference);
@@ -119,7 +119,7 @@ namespace Trestle {
             }
 
             if(!empty($difference)) {
-                throw new ConfigException('Missing required parameter(s) ' . $difference . ' from the "' . $name . '" connection.');
+                throw new ConfigException('Missing required argument(s) ' . $difference . ' from the "' . $name . '" connection.');
             }
         }
 
