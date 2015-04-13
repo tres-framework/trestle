@@ -107,7 +107,14 @@ namespace Trestle\blueprints {
             
             $this->_setStructureContents('column', ['command'], 'SELECT');
             
-            if(!empty($column)){
+            if(
+                !empty($column) && 
+                (
+                    (is_array($column) && array_values($column)[0] != '*') || 
+                    (!is_array($column) && $column != '*')
+                )
+            
+            ) {
                 $this->_setStructureContents('column', ['column', 'comma'], $column);
             } else {
                 $this->_setStructureContents('column', [], '*');
