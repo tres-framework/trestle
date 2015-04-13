@@ -499,7 +499,7 @@ namespace Trestle {
          */
         protected function _checkForTablesAndColumns($values) {
             if(is_array($values)) {
-                $checkForColumns = $values[1];
+                $checkForColumns = $values[0];
             } else {
                 $checkForColumns = $values;
             }
