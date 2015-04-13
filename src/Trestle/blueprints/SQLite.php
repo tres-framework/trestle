@@ -44,7 +44,7 @@ namespace Trestle\blueprints {
          *
          * @var boolean
          */
-        protected $_operators = ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE'];
+        protected $_operators = ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'LIKE', 'NOT IN'];
         
         /**
          * Loads in the database.
@@ -393,8 +393,8 @@ namespace Trestle\blueprints {
                 throw new QueryException('Please use a valid operator.');
             }
             
-            if(is_array($value) && !in_array($operator, ['BETWEEN', 'NOT BETWEEN'])) {
-                throw new QueryException('The where method can not accept an array value if the operator is not "BETWEEN" & "NOT BETWEEN"');
+            if(is_array($value) && !in_array($operator, ['BETWEEN', 'NOT IN'])) {
+                throw new QueryException('The where method can not accept an array value if the operator is not "BETWEEN" & "NOT IN"');
             }
             
             if(!$this->_checkStructureExist('where')) {
@@ -408,10 +408,12 @@ namespace Trestle\blueprints {
             $this->_setStructureContents('where', ['column', 'comma'], $field);
             $this->_setStructureContents('where', ['operator'], $operator);
             
-            if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
+            if(in_array($operator, ['BETWEEN']) && is_array($value)) {
                 $this->_setStructureContents('where', ['bind'], $value[0]);
                 $this->_setStructureContents('where', ['operator'], 'AND');
                 $this->_setStructureContents('where', ['bind'], $value[1]);
+            } elseif(in_array($operator, ['NOT IN'])) {
+                $this->_setStructureContents('where', ['column', 'comma', 'parentheses'], $value);
             } else {
                 if($rawBind === true) {
                     $params = 'column';
