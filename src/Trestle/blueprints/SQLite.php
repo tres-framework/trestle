@@ -207,8 +207,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
@@ -284,8 +283,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  string       $prefix   If we need to pass a prefix like AND/OR.
@@ -327,8 +325,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  array|string $value    The value(s) to pass.
          * @return object       $this
@@ -346,8 +343,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
@@ -369,7 +365,6 @@ namespace Trestle\blueprints {
          * WHERE `field` >= ?
          * WHERE `field` <= ?
          * WHERE `field` BETWEEN ? AND ?
-         * WHERE `field` NOT BETWEEN ? AND ?
          * WHERE `field` LIKE ?
          *
          * as well as extended WHERE statements with AND & OR.
@@ -377,8 +372,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE, NOT IN
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  string       $prefix   If we need to pass a prefix like AND/OR.
@@ -434,8 +428,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @return object       $this
@@ -457,8 +450,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN,
-         *                                LIKE
+         *                                =, >, <, >=, <=, BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @return object       $this
