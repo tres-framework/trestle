@@ -44,7 +44,7 @@ namespace Trestle\blueprints {
          *
          * @var boolean
          */
-        protected $_operators = ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'LIKE', 'NOT IN'];
+        protected $_operators = ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE', 'NOT LIKE', 'GLOB', 'IN', 'NOT IN', 'IS', 'IS NULL', 'IS NOT', 'EXIST'];
         
         /**
          * Loads in the database.
@@ -207,7 +207,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
          */
@@ -339,7 +339,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  string       $prefix   If we need to pass a prefix like AND/OR.
@@ -381,7 +381,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  array|string $value    The value(s) to pass.
          * @return object       $this
@@ -399,7 +399,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  array|string $value    The value(s) to pass.
          * @return object $this
@@ -428,7 +428,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE, NOT IN
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE, NOT IN
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @param  string       $prefix   If we need to pass a prefix like AND/OR.
@@ -443,7 +443,7 @@ namespace Trestle\blueprints {
                 throw new QueryException('Please use a valid operator.');
             }
             
-            if(is_array($value) && !in_array($operator, ['BETWEEN', 'NOT IN'])) {
+            if(is_array($value) && !in_array($operator, ['BETWEEN', 'NOT BETWEEN', 'NOT IN'])) {
                 throw new QueryException('The where method can not accept an array value if the operator is not "BETWEEN" & "NOT IN"');
             }
             
@@ -458,11 +458,11 @@ namespace Trestle\blueprints {
             $this->_setStructureContents('where', ['column', 'comma'], $field);
             $this->_setStructureContents('where', ['operator'], $operator);
             
-            if(in_array($operator, ['BETWEEN']) && is_array($value)) {
+            if(in_array($operator, ['BETWEEN', 'NOT BETWEEN']) && is_array($value)) {
                 $this->_setStructureContents('where', ['bind'], $value[0]);
                 $this->_setStructureContents('where', ['operator'], 'AND');
                 $this->_setStructureContents('where', ['bind'], $value[1]);
-            } elseif(in_array($operator, ['NOT IN'])) {
+            } elseif(in_array($operator, ['IN', 'NOT IN'])) {
                 $this->_setStructureContents('where', ['column', 'comma', 'parentheses'], $value);
             } else {
                 if($rawBind === true) {
@@ -484,7 +484,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @return object       $this
@@ -506,7 +506,7 @@ namespace Trestle\blueprints {
          *
          * @param  string       $field    The field to effect.
          * @param  string       $operator The operator to use:
-         *                                =, >, <, >=, <=, BETWEEN, LIKE
+         *                                =, >, <, >=, <=, BETWEEN, NOT BETWEEN, LIKE
          * @param  array|string $value    The value(s) to pass.
          * @param  bool         $rawBind  Whether to bind the values immediately or not.
          * @return object       $this
