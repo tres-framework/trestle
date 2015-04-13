@@ -37,7 +37,7 @@ namespace Trestle\blueprints {
          *
          * @var boolean
          */
-        protected $_joinTypes = ['JOIN', 'INNER JOIN', 'LEFT JOIN'];
+        protected $_joinTypes = ['JOIN', 'INNER JOIN', 'OUTER JOIN', 'LEFT JOIN', 'FULL JOIN', 'LEFT OUTER JOIN', 'CROSS JOIN', 'NATURAL JOIN'];
         
         /**
          * Set SQLite specific global flags.
@@ -265,15 +265,71 @@ namespace Trestle\blueprints {
         }
         
         /**
-         * Creates a FULL OUTER JOIN.
+         * Creates a OUTER JOIN.
          *
          * @param  string $table The table to join
          * @return object $this
          */
-        public function fullOuterJoin($table) {
+        public function outerJoin($table) {
             $this->_backtrace();
             
-            $this->join($table, 'FULL OUTER JOIN');
+            $this->join($table, 'OUTER JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Creates a FULL JOIN.
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function fullJoin($table) {
+            $this->_backtrace();
+            
+            $this->join($table, 'FULL JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Creates a LEFT OUTER JOIN.
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function leftOuterJoin($table) {
+            $this->_backtrace();
+            
+            $this->join($table, 'LEFT OUTER JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Creates a CROSS JOIN.
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function crossJoin($table) {
+            $this->_backtrace();
+            
+            $this->join($table, 'CROSS JOIN');
+            
+            return $this;
+        }
+        
+        /**
+         * Creates a NATURAL JOIN.
+         *
+         * @param  string $table The table to join
+         * @return object $this
+         */
+        public function naturalJoin($table) {
+            $this->_backtrace();
+            
+            $this->join($table, 'NATURAL JOIN');
             
             return $this;
         }
