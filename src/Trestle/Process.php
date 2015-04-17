@@ -4,6 +4,7 @@ namespace Trestle {
     
     use PDO;
     use PDOException;
+    use ReflectionMethod;
     use Trestle\Config;
     use Trestle\Stopwatch;
     use Trestle\DatabaseException;
@@ -39,6 +40,23 @@ namespace Trestle {
          * @var array
          */
         private $_debug = [];
+
+        /**
+         * Array to redirect methods to other methods so multiple syntax can 
+         * be used. Example, the following are the same:
+         * 
+         * $results = $db->read('table')->exec();
+         * 
+         * $results->all();
+         * $results->results();
+         * 
+         * @var array
+         */
+        public $aliases = [
+            'all'   => 'results',
+            'first' => 'result',
+            'last'  => 'lastInsertId',
+        ];
         
         /**
          * Instantiates the connection of the database.
@@ -169,6 +187,31 @@ namespace Trestle {
             
             return $this;
         }
+		
+        /**
+         * Catches aliased methods and redirects them to the real methods. 
+         * Example, the following are the same:
+         * 
+         * $var->all();
+         * $var->results();
+         * 
+         * @param  string $method The method name.
+         * @param  mixed  $args   The arguments.
+         * @return object
+         */
+		public function __call($method, $args) {
+		    if(!method_exists($this, $method) && !in_array($method, array_keys($this->aliases))) {
+                throw new DatabaseException('Trestle was unable to recognize your method or alias call for "' . $method . '()".');
+            }
+            
+            if(in_array($method, array_keys($this->aliases))) {
+                $method = $this->aliases[$method];
+            }
+		
+            $reflection = new ReflectionMethod(__CLASS__, $method);
+            
+            return $reflection->invokeArgs($this, $args);
+		}
 		
         /**
          * Returns all the results of a query.

@@ -72,6 +72,17 @@ namespace Trestle {
          * @var array
          */
         protected $_backtrace = [];
+
+        /**
+         * Array to redirect methods to other methods so multiple syntax can 
+         * be used. Example, the following are the same:
+         * 
+         * $db->select('table')->exec();
+         * $db->read('table')->exec();
+         * 
+         * @var array
+         */
+        public $aliases = [];
         
         /**
          * Loads in the database.
