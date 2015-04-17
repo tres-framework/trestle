@@ -218,6 +218,16 @@ namespace Trestle {
         }
         
         /**
+         * The debug data from the blueprint.
+         * 
+         * @param string $table Get last insert id from specific table
+         * @return int Last stream id
+         */
+        public function lastInsertId($table = null) {
+            return $this->_connection->lastInsertId($table);
+        }
+        
+        /**
          * Disconnects the pdo connection
          *
          * @return void
