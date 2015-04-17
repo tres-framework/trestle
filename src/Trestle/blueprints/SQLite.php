@@ -45,6 +45,20 @@ namespace Trestle\blueprints {
          * @var boolean
          */
         protected $_operators = ['=', '>', '<',  '>=', '<=', '!=', 'BETWEEN', 'NOT BETWEEN', 'LIKE', 'NOT LIKE', 'GLOB', 'IN', 'NOT IN', 'IS', 'IS NULL', 'IS NOT', 'EXIST'];
+
+        /**
+         * Array to redirect methods to other methods so multiple syntax can 
+         * be used. Example, the following are the same:
+         * 
+         * $db->select('table')->exec();
+         * $db->read('table')->exec();
+         * 
+         * @var array
+         */
+        public $aliases = [
+            'select' => 'read',
+            'insert' => 'create',
+        ];
         
         /**
          * Loads in the database.

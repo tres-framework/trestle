@@ -24,6 +24,7 @@ namespace Trestle {
     use Exception;
     use PDO;
     use PDOException;
+    use ReflectionClass;
     use ReflectionMethod;
     use Trestle\Build;
     use Trestle\Config;
@@ -88,21 +89,30 @@ namespace Trestle {
          */
         public function __call($method, $args) {
             $method = strtolower($method);
-            if(in_array($method, ['query', 'create', 'read', 'update', 'delete', 'raw'])) {
-
-                Stopwatch::start('total');
-
-                $driver = "Trestle\blueprints\\{$this->_config['driver']}";
-
-                $reflection = new ReflectionMethod($driver, $method);
-
-                return $reflection->invokeArgs(new $driver($this->_process), $args);
-
-            } elseif($method == 'disconnect') {
+            
+            $driver = "Trestle\blueprints\\{$this->_config['driver']}";
+            
+            $reflectionClass = new ReflectionClass($driver);
+            
+            $aliases = $reflectionClass->getProperty('aliases')->getValue(new $driver($this->_process));
+            
+            if($method == 'disconnect') {
                 $this->_process->disconnect();
-            } else {
-                throw new DatabaseException('Trestle was unable to recognize your database call "' . $method . '()".');
             }
+            
+            if(!$reflectionClass->hasMethod($method) && !in_array($method, array_keys($aliases))) {
+                throw new DatabaseException('Trestle was unable to recognize your method or alias call for "' . $method . '()".');
+            }
+            
+            if(in_array($method, array_keys($aliases))) {
+                $method = $aliases[$method];
+            }
+            
+            Stopwatch::start('total');
+            
+            $reflection = new ReflectionMethod($driver, $method);
+            
+            return $reflection->invokeArgs(new $driver($this->_process), $args);
         }
 
     }
