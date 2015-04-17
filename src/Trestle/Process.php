@@ -83,22 +83,35 @@ namespace Trestle {
                 throw new DatabaseException('Missing DSN pattern or is not readable for a ' . $config['driver'] . ' connection.');
             }
             
-            $parse = file_get_contents($dsnPattern);
+            $dsnTemplateString = file_get_contents($dsnPattern);
             
-            return rtrim(
-                // Creates dsn string: mysql:host={~host};dbname={~database};{~port};{~charset};
-                str_replace(
-                    // Replace any instance of "{~value}" with the config value.
-                    array_map(
-                        function($value) {
-                            return '{~' . $value . '}';
-                        }, 
-                        array_keys($config)
-                    ), 
-                    array_values($config), 
-                    $parse
-                )
+            return $this->_parseDSNString($config, $dsnTemplateString);
+        }
+        
+        /**
+         * Converts the template dsn string like this:
+         * Creates dsn string: mysql:host={~host};dbname={~database};{~port};{~charset};
+         * 
+         * To this:
+         * Creates dsn string: mysql:host=127.0.0.1;dbname=example;3306;utf-8;
+         * 
+         * @param  array  $config Config values for DSN string.
+         * @param  string $string The DSN string.
+         * @return string A valid PDO DSN string.
+         */
+        protected function _parseDSNString($config, $string){
+            $placeholders = array_map(
+                function($value){
+                    return '{~' . $value . '}';
+                },
+                array_keys($config)
             );
+            $binds = array_values($config);
+
+            $dsn = str_replace($placeholders, $binds, $string);
+            $dsn = rtrim($dsn);
+
+            return $dsn;
         }
         
         /**
