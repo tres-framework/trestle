@@ -108,7 +108,7 @@ namespace Trestle {
         
         /**
          * Converts the template dsn string like this:
-         * Creates dsn string: mysql:host={~host};dbname={~database};{~port};{~charset};
+         * mysql:host={~host};dbname={~database};{~port};{~charset};
          * 
          * To this:
          * Creates dsn string: mysql:host=127.0.0.1;dbname=example;3306;utf-8;
@@ -264,7 +264,7 @@ namespace Trestle {
          * The debug data from the blueprint.
          * 
          * @param string $table Get last insert id from specific table
-         * @return int Last stream id
+         * @return int The last inserted row's id.
          */
         public function lastInsertId($table = null) {
             return $this->_connection->lastInsertId($table);
