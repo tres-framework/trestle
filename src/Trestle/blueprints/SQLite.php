@@ -279,7 +279,7 @@ namespace Trestle\blueprints {
         }
         
         /**
-         * Creates a OUTER JOIN.
+         * Creates an OUTER JOIN.
          *
          * @param  string $table The table to join
          * @return object $this
@@ -458,7 +458,7 @@ namespace Trestle\blueprints {
             }
             
             if(is_array($value) && !in_array($operator, ['BETWEEN', 'NOT BETWEEN', 'NOT IN'])) {
-                throw new QueryException('The where method can not accept an array value if the operator is not "BETWEEN" & "NOT IN"');
+                throw new QueryException('The where method can not accept an array value if the operator is not "BETWEEN", "NOT BETWEEN" or "NOT IN"');
             }
             
             if(!$this->_checkStructureExist('where')) {
