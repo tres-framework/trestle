@@ -206,7 +206,7 @@ namespace Trestle {
          * @return bool Tells whether the query succeeded or not.
          */
         public function status() {
-            return $this->statement->rowCount();
+            return $this->status;
         }
         
         /**
