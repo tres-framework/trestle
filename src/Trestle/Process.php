@@ -170,11 +170,11 @@ namespace Trestle {
             
             return $this;
         }
-		
+        
         /**
          * Returns all the results of a query.
          * 
-		 * @param string $fetch The fetch mode
+         * @param string $fetch The fetch mode
          * @return array|object
          */
         public function all($fetch = PDO::FETCH_OBJ) {
@@ -184,7 +184,7 @@ namespace Trestle {
         /**
          * Returns the first result from the query.
          * 
-		 * @param string $fetch The fetch mode
+         * @param string $fetch The fetch mode
          * @return object
          */
         public function first($fetch = PDO::FETCH_OBJ) {
