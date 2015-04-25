@@ -177,7 +177,7 @@ namespace Trestle {
 		 * @param string $fetch The fetch mode
          * @return array|object
          */
-        public function results($fetch = PDO::FETCH_OBJ) {
+        public function all($fetch = PDO::FETCH_OBJ) {
             return $this->statement->fetchAll($fetch);
         }
         
@@ -187,7 +187,7 @@ namespace Trestle {
 		 * @param string $fetch The fetch mode
          * @return object
          */
-        public function result($fetch = PDO::FETCH_OBJ) {
+        public function first($fetch = PDO::FETCH_OBJ) {
             return $this->statement->fetch($fetch);
         }
         
