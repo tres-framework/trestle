@@ -92,20 +92,14 @@ namespace Trestle {
             
             $driver = "Trestle\blueprints\\{$this->_config['driver']}";
             
-            $reflectionClass = new ReflectionClass($driver);
-            
-            $aliases = $reflectionClass->getProperty('aliases')->getValue(new $driver($this->_process));
+            $reflectionBlueprint = new ReflectionClass($driver);
             
             if($method == 'disconnect') {
                 $this->_process->disconnect();
             }
             
-            if(!$reflectionClass->hasMethod($method) && !in_array($method, array_keys($aliases))) {
+            if(!$reflectionBlueprint->hasMethod($method)) {
                 throw new DatabaseException('Trestle was unable to recognize your method or alias call for "' . $method . '()".');
-            }
-            
-            if(in_array($method, array_keys($aliases))) {
-                $method = $aliases[$method];
             }
             
             Stopwatch::start('total');
