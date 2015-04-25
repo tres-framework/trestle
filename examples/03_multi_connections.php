@@ -40,7 +40,7 @@ $database = new Trestle\Database('connection_name_1');
 $data = $database->query('SELECT * FROM `table_name` WHERE `column` = ?', ['some_text_to_prepare'])
            ->exec();
 
-echo '<pre>'; print_r($data->result()); echo '</pre>';
+echo '<pre>'; print_r($data->first()); echo '</pre>';
 
 
 
@@ -54,4 +54,4 @@ $database_2 = new Trestle\Database('connection_name_2');
 $data = $database_2->query('SELECT * FROM `table_name` WHERE `column` = ?', ['some_text_to_prepare'])
                    ->exec();
 
-echo '<pre>'; print_r($data->result()); echo '</pre>';
+echo '<pre>'; print_r($data->first()); echo '</pre>';

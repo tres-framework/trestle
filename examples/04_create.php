@@ -32,4 +32,4 @@ $data = $db->create('users', [
 ])->exec();
 
 echo '<pre>'; print_r($data->status()); echo '</pre>';
-echo '<pre>'; print_r($data->result()); echo '</pre>';
+echo '<pre>'; print_r($data->first()); echo '</pre>';

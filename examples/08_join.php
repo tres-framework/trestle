@@ -26,7 +26,7 @@ $users = $db->read(['posts', 'users'], ['posts.id', 'posts.title', 'users.userna
             ->where('posts.author', '=', 'users.id', true)
             ->exec();
 
-echo '<pre>'; print_r($users->results()); echo '</pre>';
+echo '<pre>'; print_r($users->all()); echo '</pre>';
 
 // Using join() & on()
 $users = $db->read('posts', ['posts.id', 'posts.title'])
@@ -34,4 +34,4 @@ $users = $db->read('posts', ['posts.id', 'posts.title'])
             ->on('posts.author', '=', 'users.id')
             ->exec();
 
-echo '<pre>'; print_r($users->results()); echo '</pre>';
+echo '<pre>'; print_r($users->all()); echo '</pre>';

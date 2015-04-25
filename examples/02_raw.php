@@ -24,4 +24,4 @@ $db = new Trestle\Database('connection_name_1');
 $data = $db->query('SELECT * FROM `table_name` WHERE `column` = ?', ['some_text_to_prepare'])
            ->exec();
 
-echo '<pre>'; print_r($data->result()); echo '</pre>';
+echo '<pre>'; print_r($data->first()); echo '</pre>';
