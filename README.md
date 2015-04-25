@@ -37,6 +37,40 @@ This is a stand-alone package, which means that it can also be used without the 
 - ON
     - AND (andOn)
     - OR (orOn)
+    
+### SQLite
+- SELECT (read)
+- UPDATE
+- INSERT (create)
+- DELETE
+- WHERE
+   - AND (andWhere)
+   - OR (orWhere)
+   - BETWEEN
+   - NOT BETWEEN
+   - LIKE
+   - NOT LIKE
+   - GLOB
+   - IN
+   - NOT IN
+   - IS
+   - IS NULL
+   - IS NOT
+   - EXIST
+- ORDER BY
+- GROUP BY
+- LIMIT (limit, offset)
+- JOIN
+    - INNER JOIN
+    - OUTER JOIN
+    - LEFT JOIN
+    - FULL JOIN
+    - LEFT OUTER JOIN
+    - CROSS JOIN
+    - NATURAL JOIN
+- ON
+    - AND (andOn)
+    - OR (orOn)
 
 And of course you can use raw queries. But note that its syntax depends on the 
 driver you're using.
@@ -231,7 +265,7 @@ $query = $db->read('users', ['username', 'firstname', 'email'])
             ->exec();
 ```
 
-```php        
+```php
 // SELECT * FROM `users` ORDER BY ? ASC LIMIT ?, ?
 $query = $db->read('users')
             ->order('id', 'ASC')
@@ -365,11 +399,11 @@ $delete = $db->delete('users')
 ### Getting results
 #### Getting the first result
 ```php
-$query->result()
+$query->first()
 ```
 #### Getting all of the results
 ```php
-$query->results()
+$query->all()
 ```
 
 #### Getting the row count
