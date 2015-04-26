@@ -27,25 +27,6 @@ namespace Trestle {
         ];
 
         /**
-         * Mandatory parameters for each connection.
-         *
-         * @var private
-         */
-        private static $_requiredArguments = [
-            'MySQL' => [
-                'driver',
-                'database',
-                'host',
-                'username',
-                'password'
-            ],
-            'SQLite' => [
-                'driver',
-                'database'
-            ],
-        ];
-
-        /**
          * Sets configs into the $_config array and if validation is true checks 
          * to see if a connection block has the required parameters with 
          * _validate().
@@ -96,9 +77,11 @@ namespace Trestle {
         }
 
         /**
-         * Validates a configuration block by comparing it to the class variable 
-         * $_requiredArguments. This block does not validate that a connection will work, 
-         * just that it has the proper parameters to attempt a connection.
+         * Validates a configuration block by comparing it to the required 
+         * options array in the driver's DSN config file. 
+         * 
+         * This block does not validate that a connection will work, 
+         * just that it has the proper arguments to attempt a connection.
          * 
          * @param  string $name       Name of the connection.
          * @param  array  $connection An array of connection.
@@ -107,19 +90,26 @@ namespace Trestle {
             if(!isset($connection['driver'])) {
                 throw new ConfigException('Missing driver for "' . $name . '" connection.');
             }
-            $difference = array_diff(self::$_requiredArguments[$connection['driver']], array_keys($connection));
-
-            if(count($difference) == 2) {
-                $difference = implode(' & ', $difference);
-            } elseif(count($difference) > 2) {
-                $lastDiff = array_pop($difference);
-                $difference = implode(', ', $difference) . ' & ' . $lastDiff;
-            } else {
-                $difference = implode(', ', $difference);
+            
+            $dsnInfo = dirname(__FILE__) . '/dsn/' . $connection['driver'] . '.php';
+            
+            if(!is_readable($dsnInfo)) {
+                throw new DatabaseException('Missing DSN information or is not readable for a ' . $connection['driver'] . ' connection.');
             }
-
-            if(!empty($difference)) {
-                throw new ConfigException('Missing required argument(s) ' . $difference . ' from the "' . $name . '" connection.');
+            
+            $dsnInfo   = require($dsnInfo);
+            
+            $optionSet = false;
+            
+            foreach($dsnInfo['required'] as $key => $option) {
+                $difference = array_diff($option, array_keys($connection));
+                if(empty($difference)) {
+                    $optionSet = true;
+                }
+            }
+            
+            if($optionSet === false) {
+                throw new ConfigException('Missing required argument(s) for "' . $name . '" connection.');
             }
         }
 

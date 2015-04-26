@@ -79,40 +79,54 @@ namespace Trestle {
          * @return string A valid PDO DSN string.
          */
         private function _generateDSN($config) {
-            $dsnPattern = dirname(__FILE__) . '/dsn/' . $config['driver'] . '.dsn';
-            if(!is_readable($dsnPattern)) {
-                throw new DatabaseException('Missing DSN pattern or is not readable for a ' . $config['driver'] . ' connection.');
+            $dsn = dirname(__FILE__) . '/dsn/' . $config['driver'] . '.php';
+            if(!is_readable($dsn)) {
+                throw new DatabaseException('Missing DSN information or is not readable for a ' . $config['driver'] . ' connection.');
             }
             
-            $dsnTemplateString = file_get_contents($dsnPattern);
+            $dsn = require($dsn);
             
-            return $this->_parseDSNString($config, $dsnTemplateString);
+            return $this->_parseDSNString($config, $dsn);
         }
         
         /**
-         * Converts the template dsn string like this:
-         * mysql:host={~host};dbname={~database};{~port};{~charset};
+         * Converts the dsn pattern from dsn config file into the dsn string.
          * 
-         * To this:
-         * Creates dsn string: mysql:host=127.0.0.1;dbname=example;3306;utf-8;
+         * Here is an example string:
+         * mysql:host=127.0.0.1;dbname=example;port=3306;charset=utf8
+         * sqlite:/var/www/database.sqlite
          * 
-         * @param  array  $config Config values for DSN string.
-         * @param  string $string The DSN string.
+         * @param  array  $config The users Config settings.
+         * @param  string $string The DSN config array.
          * @return string A valid PDO DSN string.
          */
-        protected function _parseDSNString($config, $string){
-            $placeholders = array_map(
-                function($value){
-                    return '{~' . $value . '}';
-                },
-                array_keys($config)
-            );
-            $binds = array_values($config);
-
-            $dsn = str_replace($placeholders, $binds, $string);
-            $dsn = rtrim($dsn);
-
-            return $dsn;
+        protected function _parseDSNString($config, $dsn) {
+            $dsnString = '';
+            
+            if(empty($dsn['pattern'])) {
+                throw new DatabaseException('Unable to parse DSN string, no DSN pattern set for a ' . $config['driver'] . ' connection.');
+            }
+            
+            foreach($dsn['pattern'] as $key => $pattern) {
+            
+                $bitValue = null;
+                
+                if(isset($pattern['value'])) {
+                    $bitValue = $pattern['value'];
+                } elseif(isset($config[$key])) {
+                    $bitValue = $config[$key];
+                } elseif(isset($dsn['defaults'][$key])) {
+                    $bitValue = $dsn['defaults'][$value];
+                }
+                
+                if(isset($bitValue)) {
+                    $dsnString .= $pattern['prefix'] . 
+                                  $bitValue . 
+                                  $pattern['suffix'];
+                }
+            }
+            
+            return rtrim($dsnString, ';');
         }
         
         /**
